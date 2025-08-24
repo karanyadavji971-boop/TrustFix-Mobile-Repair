@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TrustFix Mobile Repair</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --card: #111111;
+      --text: #f1f1f1;
+      --muted: #aaa;
+      --brand: #22c55e;
+      --accent: #38bdf8;
+      --radius: 18px;
+      --gradient: linear-gradient(135deg, var(--brand), var(--accent));
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, Roboto, Arial;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(15, 15, 15, 0.95);
+      border-bottom: 1px solid #222;
+      backdrop-filter: blur(10px);
+    }
+    
+    .topbar {
+      max-width: 1000px;
+      margin: auto;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .brand {
+      font-weight: 800;
+      font-size: 24px;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .lang {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .lang button {
+      background: transparent;
+      border: 1px solid #444;
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .lang button:hover {
+      background: #333;
+    }
+    
+    .lang button.active {
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+    }
+    
+    /* Text slider */
+    .slider-wrap {
+      overflow: hidden;
+      background: #111;
+      border-top: 1px solid #222;
+      border-bottom: 1px solid #222;
+    }
+    
+    .slider {
+      display: flex;
+      gap: 50px;
+      padding: 12px;
+      animation: marquee 20s linear infinite;
+      white-space: nowrap;
+    }
+    
+    @keyframes marquee {
+      from { transform: translateX(100%); }
+      to { transform: translateX(-100%); }
+    }
+    
+    .slide {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--brand);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    /* Main content */
+    .container {
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+    
+    .card {
+      background: var(--card);
+      padding: 30px;
+      border-radius: var(--radius);
+      border: 1px solid #333;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    }
+    
+    .card h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .sub {
+      color: var(--muted);
+      margin-bottom: 25px;
+      font-size: 16px;
+    }
+    
+    form {
+      display: grid;
+      gap: 22px;
+    }
+    
+    .row {
+      display: grid;
+      gap: 22px;
+    }
+    
+    @media (min-width: 768px) {
+      .row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    
+    label {
+      display: block;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid #444;
+      background: #0a0a0a;
+      color: var(--text);
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 16px 20px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .primary {
+      background: var(--gradient);
+      color: #000;
+    }
+    
+    .primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+    }
+    
+    .note {
+      font-size: 14px;
+      color: var(--accent);
+      margin-top: 12px;
+      font-weight: 600;
+      text-align: center;
+    }
+    
+    /* Rating slider */
+    .rating-wrap {
+      overflow: hidden;
+      background: #0f0f0f;
+      border-top: 1px solid #222;
+      margin-top: 40px;
+      border-bottom: 1px solid #222;
+    }
+    
+    .rating-slider {
+      display: flex;
+      gap: 60px;
+      padding: 15px;
+      animation: marquee 25s linear infinite;
+      white-space: nowrap;
+    }
+    
+    .rating {
+      font-size: 16px;
+      color: #ffcc00;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    /* Features section */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin: 40px 0;
+    }
+    
+    .feature {
+      background: var(--card);
+      padding: 25px;
+      border-radius: 16px;
+      border: 1px solid #333;
+      text-align: center;
+    }
+    
+    .feature i {
+      font-size: 40px;
+      color: var(--brand);
+      margin-bottom: 15px;
+    }
+    
+    .feature h3 {
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+    
+    .feature p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    
+    /* Footer */
+    footer {
+      max-width: 1000px;
+      margin: 50px auto 20px;
+      padding: 0 20px;
+      color: #bbb;
+    }
+    
+    .foot-card {
+      background: #111;
+      padding: 25px;
+      border-radius: 20px;
+      border: 1px solid #333;
+    }
+    
+    .contact-grid {
+      display: grid;
+      gap: 20px;
+    }
+    
+    @media (min-width: 640px) {
+      .contact-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    a:hover {
+      text-decoration: underline;
+      color: var(--brand);
+    }
+    
+    .copyright {
+      text-align: center;
+      margin-top: 30px;
+      color: #777;
+      font-size: 14px;
+    }
+    
+    /* Animation for form elements */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .card {
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    /* WhatsApp floating button */
+    .whatsapp-float {
+      position: fixed;
+      width: 60px;
+      height: 60px;
+      bottom: 25px;
+      right: 25px;
+      background: #25d366;
+      color: #fff;
+      border-radius: 50px;
+      text-align: center;
+      font-size: 30px;
+      box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    
+    .whatsapp-float:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 20px rgba(37, 211, 102, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <i class="fas fa-mobile-alt"></i>
+        <span id="titleTxt">TrustFix Mobile Repair</span>
+      </div>
+      <div class="lang">
+        <button type="button" class="active" id="btnHi">हिंदी</button>
+        <button type="button" id="btnEn">English</button>
+      </div>
+    </div>
+    <div class="slider-wrap">
+      <div class="slider">
+        <div class="slide"><i class="fas fa-mobile"></i> <span id="sl1">स्क्रीन रिप्लेसमेंट</span></div>
+        <div class="slide"><i class="fas fa-battery-quarter"></i> <span id="sl2">बैटरी समस्या</span></div>
+        <div class="slide"><i class="fas fa-bolt"></i> <span id="sl3">चार्जिंग इश्यू</span></div>
+        <div class="slide"><i class="fas fa-tint"></i> <span id="sl4">पानी से खराब मोबाइल</span></div>
+        <div class="slide"><i class="fas fa-camera"></i> <span id="sl5">कैमरा रिपेयर</span></div>
+        <div class="slide"><i class="fas fa-volume-up"></i> <span id="sl6">स्पीकर और माइक</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h1 id="formTitle">मरम्मत अनुरोध फ़ॉर्म</h1>
+      <p class="sub" id="formSub">अपनी डिटेल भरें — हम WhatsApp पर तुरंत जवाब देंगे।</p>
+
+      <form id="repairForm">
+        <div class="row">
+          <div>
+            <label id="labName" for="name"><i class="fas fa-user"></i> नाम</label>
+            <input id="name" name="name" type="text" placeholder="अपना नाम" required>
+          </div>
+          <div>
+            <label id="labPhone" for="phone"><i class="fas fa-phone"></i> मोबाइल नंबर</label>
+            <input id="phone" name="phone" type="tel" placeholder="10 अंकों का नंबर" required>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label id="labBrand" for="brand"><i class="fas fa-mobile"></i> फोन ब्रांड</label>
+            <select id="brand" name="brand" required>
+              <option value="" disabled selected>— चुनें —</option>
+              <option>Apple</option><option>Samsung</option><option>Xiaomi</option>
+              <option>Realme</option><option>OnePlus</option><option>Vivo</option>
+              <option>Oppo</option><option>Motorola</option><option>Nokia</option>
+              <option value="Other">Other / अन्य</option>
+            </select>
+          </div>
+          <div>
+            <label id="labModel" for="model"><i class="fas fa-mobile-alt"></i> मॉडल</label>
+            <select id="model" name="model">
+              <option value="" disabled selected>— मॉडल चुनें —</option>
+              <option>iPhone 11</option><option>iPhone 12</option><option>Galaxy S21</option>
+              <option>Galaxy A54</option><option>Redmi Note 12</option><option>Realme 11 Pro</option>
+              <option value="otherText">Other / लिखें…</option>
+            </select>
+            <input id="modelOther" type="text" placeholder="अपना मॉडल लिखें" style="display:none;margin-top:8px;">
+          </div>
+        </div>
+
+        <div>
+          <label id="labIssue" for="issue"><i class="fas fa-tools"></i> समस्या</label>
+          <textarea id="issue" rows="3" placeholder="जैसे: स्क्रीन टूटी है, चार्जिंग नहीं हो रही…"></textarea>
+        </div>
+
+        <button type="submit" class="btn primary">
+          <i class="fab fa-whatsapp"></i>
+          <span id="btnTxt">WhatsApp पर भेजें</span>
+        </button>
+        <div class="note" id="privacyNote">आपको तुरंत संपर्क किया जाएगा — कृपया प्रतीक्षा करें।</div>
+      </form>
+    </div>
+
+    <!-- Features Section -->
+    <div class="features">
+      <div class="feature">
+        <i class="fas fa-tools"></i>
+        <h3 id="feature1Title">पेशेवर मरम्मत</h3>
+        <p id="feature1Desc">10+ years अनुभव के साथ विशेषज्ञ तकनीशियन</p>
+      </div>
+      <div class="feature">
+        <i class="fas fa-shield-alt"></i>
+        <h3 id="feature2Title">गुणवत्ता की गारंटी</h3>
+        <p id="feature2Desc">90 दिनों की वारंटी सभी सेवाओं पर</p>
+      </div>
+      <div class="feature">
+        <i class="fas fa-truck"></i>
+        <h3 id="feature3Title">मुफ़्त पिकअप & डिलीवरी</h3>
+        <p id="feature3Desc">दिल्ली भर में निःशुल्क सेवा</p>
+      </div>
+    </div>
+  </main>
+
+  <div class="rating-wrap">
+    <div class="rating-slider">
+      <div class="rating"><i class="fas fa-star"></i> <span id="rt1">★★★★★ 5000+ ग्राहकों ने भरोसा किया</span></div>
+      <div class="rating"><i class="fas fa-star"></i> <span id="rt2">★★★★★ तेज़ और भरोसेमंद सर्विस</span></div>
+      <div class="rating"><i class="fas fa-star"></i> <span id="rt3">★★★★★ असली पार्ट्स का इस्तेमाल</span></div>
+      <div class="rating"><i class="fas fa-star"></i> <span id="rt4">★★★★★ ग्राहक संतुष्टि गारंटी</span></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="foot-card">
+      <div class="contact-grid">
+        <div>
+          <strong id="addrHead">पता</strong><br/>
+          <span id="addrText">सेक्टर 24, रोहिणी, दिल्ली-86</span>
+        </div>
+        <div>
+          <strong>Email</strong><br/>
+          <a href="mailto:abhishekbainsla363@gmail.com">abhishekbainsla363@gmail.com</a><br/>
+          <strong>WhatsApp:</strong> <a href="https://wa.me/919458051202" target="_blank">+91 94580 51202</a>
+        </div>
+      </div>
+    </div>
+    <div class="copyright">
+      &copy; 2023 TrustFix Mobile Repair. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- WhatsApp Float Button -->
+  <a href="https://wa.me/919458051202" class="whatsapp-float" target="_blank">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <script>
+    // Model Other option
+    const modelSel = document.getElementById('model');
+    const modelOther = document.getElementById('modelOther');
+    modelSel.addEventListener('change', () => {
+      if (modelSel.value === 'otherText') {
+        modelOther.style.display = 'block';
+        modelOther.setAttribute('required', 'true');
+      } else {
+        modelOther.style.display = 'none';
+        modelOther.removeAttribute('required');
+        modelOther.value = '';
+      }
+    });
+
+    // WhatsApp send
+    const form = document.getElementById('repairForm');
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const brand = document.getElementById('brand').value;
+      const modelValue = modelSel.value === 'otherText' ? (modelOther.value.trim() || 'Not specified') : modelSel.value;
+      const issue = document.getElementById('issue').value.trim();
+      
+      const msg = `नमस्ते, मुझे मोबाइल रिपेयर चाहिए।%0Aनाम: ${name}%0Aनंबर: ${phone}%0Aब्रांड: ${brand}%0Aमॉडल: ${modelValue}%0A${issue ? `समस्या: ${issue}%0A` : ''}— TrustFix वेबसाइट फ़ॉर्म`;
+      window.open(`https://wa.me/919458051202?text=${msg}`, '_blank');
+    });
+
+    // Language Packs
+    const langPacks = {
+      hi: {
+        title: "TrustFix Mobile Repair",
+        formTitle: "मरम्मत अनुरोध फ़ॉर्म",
+        formSub: "अपनी डिटेल भरें — हम WhatsApp पर तुरंत जवाब देंगे।",
+        labName: "नाम", labPhone: "मोबाइल नंबर", labBrand: "फोन ब्रांड", labModel: "मॉडल", labIssue: "समस्या",
+        btnTxt: "WhatsApp पर भेजें", privacy: "आपको तुरंत संपर्क किया जाएगा — कृपया प्रतीक्षा करें।",
+        addrHead: "पता", addrText: "सेक्टर 24, रोहिणी, दिल्ली-86",
+        sl1: "स्क्रीन रिप्लेसमेंट", sl2: "बैटरी समस्या", sl3: "चार्जिंग इश्यू", 
+        sl4: "पानी से खराब मोबाइल", sl5: "कैमरा रिपेयर", sl6: "स्पीकर और माइक",
+        rt1: "★★★★★ 5000+ ग्राहकों ने भरोसा किया", rt2: "★★★★★ तेज़ और भरोसेमंद सर्विस", 
+        rt3: "★★★★★ असली पार्ट्स का इस्तेमाल", rt4: "★★★★★ ग्राहक संतुष्टि गारंटी",
+        feature1Title: "पेशेवर मरम्मत", feature1Desc: "10+ years अनुभव के साथ विशेषज्ञ तकनीशियन",
+        feature2Title: "गुणवत्ता की गारंटी", feature2Desc: "90 दिनों की वारंटी सभी सेवाओं पर",
+        feature3Title: "मुफ़्त पिकअप & डिलीवरी", feature3Desc: "दिल्ली भर में निःशुल्क सेवा"
+      },
+      en: {
+        title: "TrustFix Mobile Repair",
+        formTitle: "Repair Request Form",
+        formSub: "Fill your details — we will reply instantly on WhatsApp.",
+        labName: "Full Name", labPhone: "Mobile Number", labBrand: "Phone Brand", 
+        labModel: "Model", labIssue: "Issue",
+        btnTxt: "Send on WhatsApp", privacy: "We will contact you shortly — please wait a moment.",
+        addrHead: "Address", addrText: "Sector 24, Rohini, Delhi-86",
+        sl1: "Screen Replacement", sl2: "Battery Issue", sl3: "Charging Problem", 
+        sl4: "Water Damage Repair", sl5: "Camera Repair", sl6: "Speaker & Mic Fix",
+        rt1: "★★★★★ Trusted by 5000+ Customers", rt2: "★★★★★ Fast & Reliable Service", 
+        rt3: "★★★★★ Genuine Parts Used", rt4: "★★★★★ Customer Satisfaction Guaranteed",
+        feature1Title: "Professional Repair", feature1Desc: "Expert technicians with 10+ years experience",
+        feature2Title: "Quality Guarantee", feature2Desc: "90 days warranty on all services",
+        feature3Title: "Free Pickup & Delivery", feature3Desc: "Free service across Delhi"
+      }
+    };
+
+    const el = id => document.getElementById(id);
+    
+    function applyLang(l) {
+      const t = langPacks[l];
+      el('titleTxt').textContent = t.title;
+      el('formTitle').textContent = t.formTitle;
+      el('formSub').textContent = t.formSub;
+      el('labName').textContent = t.labName;
+      el('labPhone').textContent = t.labPhone;
+      el('labBrand').textContent = t.labBrand;
+      el('labModel').textContent = t.labModel;
+      el('labIssue').textContent = t.labIssue;
+      el('btnTxt').textContent = t.btnTxt;
+      el('privacyNote').textContent = t.privacy;
+      el('addrHead').textContent = t.addrHead;
+      el('addrText').textContent = t.addrText;
+      el('sl1').textContent = t.sl1; el('sl2').textContent = t.sl2; el('sl3').textContent = t.sl3;
+      el('sl4').textContent = t.sl4; el('sl5').textContent = t.sl5; el('sl6').textContent = t.sl6;
+      el('rt1').textContent = t.rt1; el('rt2').textContent = t.rt2; 
+      el('rt3').textContent = t.rt3; el('rt4').textContent = t.rt4;
+      el('feature1Title').textContent = t.feature1Title; el('feature1Desc').textContent = t.feature1Desc;
+      el('feature2Title').textContent = t.feature2Title; el('feature2Desc').textContent = t.feature2Desc;
+      el('feature3Title').textContent = t.feature3Title; el('feature3Desc').textContent = t.feature3Desc;
+      
+      // Update placeholders based on language
+      document.getElementById('name').placeholder = l === 'hi' ? 'अपना नाम' : 'Your Name';
+      document.getElementById('phone').placeholder = l === 'hi' ? '10 अंकों का नंबर' : '10-digit number';
+      document.getElementById('issue').placeholder = l === 'hi' ? 'जैसे: स्क्रीन टूटी है, चार्जिंग नहीं हो रही…' : 'E.g.: Screen is broken, not charging...';
+      if (document.getElementById('modelOther').style.display === 'block') {
+        document.getElementById('modelOther').placeholder = l === 'hi' ? 'अपना मॉडल लिखें' : 'Enter your model';
+      }
+      
+      document.documentElement.lang = (l === 'hi' ? 'hi' : 'en');
+      btnHi.classList.toggle('active', l === 'hi');
+      btnEn.classList.toggle('active', l === 'en');
+    }
+    
+    const btnHi = document.getElementById('btnHi');
+    const btnEn = document.getElementById('btnEn');
+    btnHi.addEventListener('click', () => applyLang('hi'));
+    btnEn.addEventListener('click', () => applyLang('en'));
+    
+    // Initialize with Hindi
+    applyLang('hi');
+  </script>
+</body>
+</html>
