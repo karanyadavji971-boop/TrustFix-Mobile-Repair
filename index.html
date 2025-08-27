@@ -2,14 +2,13 @@
 <html lang="hi">
 <head>
   <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-QCZVZRZYZX"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-QCZVZRZYZX');
-</script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-QCZVZRZYZX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-QCZVZRZYZX');
+  </script>
   
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -416,21 +415,24 @@
         <div class="row">
           <div>
             <label id="labBrand" for="brand"><i class="fas fa-mobile"></i> फोन ब्रांड</label>
-            <select id="brand" name="brand" required>
+            <select id="brand" name="brand" required onchange="updateModels()">
               <option value="" disabled selected>— चुनें —</option>
-              <option>Apple</option><option>Samsung</option><option>Xiaomi</option>
-              <option>Realme</option><option>OnePlus</option><option>Vivo</option>
-              <option>Oppo</option><option>Motorola</option><option>Nokia</option>
+              <option value="Apple">Apple</option>
+              <option value="Samsung">Samsung</option>
+              <option value="Xiaomi">Xiaomi</option>
+              <option value="Realme">Realme</option>
+              <option value="OnePlus">OnePlus</option>
+              <option value="Vivo">Vivo</option>
+              <option value="Oppo">Oppo</option>
+              <option value="Motorola">Motorola</option>
+              <option value="Nokia">Nokia</option>
               <option value="Other">Other / अन्य</option>
             </select>
           </div>
           <div>
             <label id="labModel" for="model"><i class="fas fa-mobile-alt"></i> मॉडल</label>
-            <select id="model" name="model">
-              <option value="" disabled selected>— मॉडल चुनें —</option>
-              <option>iPhone 11</option><option>iPhone 12</option><option>Galaxy S21</option>
-              <option>Galaxy A54</option><option>Redmi Note 12</option><option>Realme 11 Pro</option>
-              <option value="otherText">Other / लिखें…</option>
+            <select id="model" name="model" required>
+              <option value="" disabled selected>— पहले ब्रांड चुनें —</option>
             </select>
             <input id="modelOther" type="text" placeholder="अपना मॉडल लिखें" style="display:none;margin-top:8px;">
           </div>
@@ -503,6 +505,120 @@
   </a>
 
   <script>
+    // Brand to Models Mapping
+    const brandModels = {
+      "Apple": [
+        "iPhone 7", "iPhone 7 Plus", "iPhone 8", "iPhone 8 Plus", 
+        "iPhone X", "iPhone XR", "iPhone XS", "iPhone XS Max",
+        "iPhone 11", "iPhone 11 Pro", "iPhone 11 Pro Max",
+        "iPhone 12", "iPhone 12 Mini", "iPhone 12 Pro", "iPhone 12 Pro Max",
+        "iPhone 13", "iPhone 13 Mini", "iPhone 13 Pro", "iPhone 13 Pro Max",
+        "iPhone 14", "iPhone 14 Plus", "iPhone 14 Pro", "iPhone 14 Pro Max",
+        "iPhone 15", "iPhone 15 Plus", "iPhone 15 Pro", "iPhone 15 Pro Max"
+      ],
+      "Samsung": [
+        "Galaxy S10", "Galaxy S10 Plus", "Galaxy S10e",
+        "Galaxy S20", "Galaxy S20 Plus", "Galaxy S20 Ultra",
+        "Galaxy S21", "Galaxy S21 Plus", "Galaxy S21 Ultra",
+        "Galaxy S22", "Galaxy S22 Plus", "Galaxy S22 Ultra",
+        "Galaxy S23", "Galaxy S23 Plus", "Galaxy S23 Ultra",
+        "Galaxy A10", "Galaxy A20", "Galaxy A30", "Galaxy A50",
+        "Galaxy A51", "Galaxy A52", "Galaxy A53", "Galaxy A54",
+        "Galaxy A70", "Galaxy A71", "Galaxy A72", "Galaxy A73",
+        "Galaxy Note 10", "Galaxy Note 20", "Galaxy Z Flip", "Galaxy Z Fold"
+      ],
+      "Xiaomi": [
+        "Redmi Note 7", "Redmi Note 7 Pro", "Redmi Note 8", "Redmi Note 8 Pro",
+        "Redmi Note 9", "Redmi Note 9 Pro", "Redmi Note 9 Pro Max",
+        "Redmi Note 10", "Redmi Note 10 Pro", "Redmi Note 10 Pro Max",
+        "Redmi Note 11", "Redmi Note 11 Pro", "Redmi Note 11 Pro Plus",
+        "Redmi Note 12", "Redmi Note 12 Pro", "Redmi Note 12 Pro Plus",
+        "Mi 10", "Mi 10i", "Mi 10T", "Mi 10T Pro",
+        "Mi 11", "Mi 11X", "Mi 11 Ultra", "Poco M2", "Poco M3", "Poco X3"
+      ],
+      "Realme": [
+        "Realme 5", "Realme 5 Pro", "Realme 6", "Realme 6 Pro",
+        "Realme 7", "Realme 7 Pro", "Realme 8", "Realme 8 Pro",
+        "Realme 9", "Realme 9 Pro", "Realme 9 Pro Plus",
+        "Realme 10", "Realme 10 Pro", "Realme 10 Pro Plus",
+        "Realme Narzo 20", "Realme Narzo 30", "Realme Narzo 50",
+        "Realme C11", "Realme C15", "Realme C21", "Realme C25"
+      ],
+      "OnePlus": [
+        "OnePlus 7", "OnePlus 7T", "OnePlus 7 Pro", "OnePlus 7T Pro",
+        "OnePlus 8", "OnePlus 8T", "OnePlus 8 Pro",
+        "OnePlus 9", "OnePlus 9R", "OnePlus 9 Pro",
+        "OnePlus 10", "OnePlus 10R", "OnePlus 10 Pro",
+        "OnePlus 11", "OnePlus 11R", "OnePlus Nord", "OnePlus Nord 2"
+      ],
+      "Vivo": [
+        "Vivo V15", "Vivo V17", "Vivo V19", "Vivo V20", "Vivo V21", "Vivo V23",
+        "Vivo Y12", "Vivo Y15", "Vivo Y20", "Vivo Y21", "Vivo Y33", "Vivo Y55",
+        "Vivo X60", "Vivo X70", "Vivo X80", "Vivo X90"
+      ],
+      "Oppo": [
+        "Oppo F11", "Oppo F11 Pro", "Oppo F15", "Oppo F17", "Oppo F19",
+        "Oppo A5", "Oppo A7", "Oppo A9", "Oppo A15", "Oppo A31", "Oppo A53", "Oppo A74",
+        "Oppo Reno 2", "Oppo Reno 3", "Oppo Reno 4", "Oppo Reno 5", "Oppo Reno 6"
+      ],
+      "Motorola": [
+        "Moto G5", "Moto G6", "Moto G7", "Moto G8", "Moto G9", "Moto G10", "Moto G20",
+        "Moto G30", "Moto G40", "Moto G50", "Moto G60", "Moto G71", "Moto G82",
+        "Moto E4", "Moto E5", "Moto E6", "Moto E7", "Moto Edge 20", "Moto Edge 30"
+      ],
+      "Nokia": [
+        "Nokia 5.1", "Nokia 5.3", "Nokia 5.4", "Nokia 6.1", "Nokia 6.2",
+        "Nokia 7.1", "Nokia 7.2", "Nokia 8.1", "Nokia 8.3",
+        "Nokia 2.2", "Nokia 3.2", "Nokia 3.4", "Nokia 4.2"
+      ],
+      "Other": ["Other / अन्य"]
+    };
+
+    // Function to update models based on selected brand
+    function updateModels() {
+      const brandSelect = document.getElementById('brand');
+      const modelSelect = document.getElementById('model');
+      const selectedBrand = brandSelect.value;
+      
+      // Clear previous models
+      modelSelect.innerHTML = '';
+      
+      if (selectedBrand && brandModels[selectedBrand]) {
+        // Add default option
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        defaultOption.textContent = '— मॉडल चुनें —';
+        modelSelect.appendChild(defaultOption);
+        
+        // Add models for the selected brand
+        brandModels[selectedBrand].forEach(model => {
+          const option = document.createElement('option');
+          option.value = model;
+          option.textContent = model;
+          modelSelect.appendChild(option);
+        });
+        
+        // Add "Other" option
+        const otherOption = document.createElement('option');
+        otherOption.value = 'otherText';
+        otherOption.textContent = 'Other / लिखें…';
+        modelSelect.appendChild(otherOption);
+        
+        modelSelect.disabled = false;
+      } else {
+        // If no brand selected or brand not found
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        defaultOption.textContent = '— पहले ब्रांड चुनें —';
+        modelSelect.appendChild(defaultOption);
+        modelSelect.disabled = true;
+      }
+    }
+
     // Model Other option
     const modelSel = document.getElementById('model');
     const modelOther = document.getElementById('modelOther');
