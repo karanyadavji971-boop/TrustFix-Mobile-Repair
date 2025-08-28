@@ -369,6 +369,25 @@
       transform: scale(1.1);
       box-shadow: 0 8px 20px rgba(37, 211, 102, 0.4);
     }
+    
+    /* Call button styles */
+    .call-button {
+      display: block;
+      margin-top: 15px;
+      text-align: center;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #38bdf8, #22c55e);
+      color: #000;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .call-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3);
+    }
   </style>
 </head>
 <body>
@@ -383,6 +402,7 @@
         <button type="button" id="btnEn">English</button>
       </div>
     </div>
+    
     <div class="slider-wrap">
       <div class="slider">
         <div class="slide"><i class="fas fa-mobile"></i> <span id="sl1">स्क्रीन रिप्लेसमेंट</span></div>
@@ -426,6 +446,8 @@
               <option value="Oppo">Oppo</option>
               <option value="Motorola">Motorola</option>
               <option value="Nokia">Nokia</option>
+              <option value="Tecno">Tecno</option>
+              <option value="Infinix">Infinix</option>
               <option value="Other">Other / अन्य</option>
             </select>
           </div>
@@ -447,6 +469,12 @@
           <i class="fab fa-whatsapp"></i>
           <span id="btnTxt">WhatsApp पर भेजें</span>
         </button>
+        
+        <!-- Call button added below WhatsApp button -->
+        <a href="tel:9267982460" class="call-button">
+          <i class="fas fa-phone"></i> कॉल करें: 9267982460
+        </a>
+        
         <div class="note" id="privacyNote">आपको तुरंत संपर्क किया जाएगा — कृपया प्रतीक्षा करें।</div>
       </form>
     </div>
@@ -489,7 +517,8 @@
         </div>
         <div>
           <strong>Email</strong><br/>
-          <a href="mailto:abhishekbainsla363@gmail.com">abhishekbainsla363@gmail.com</a><br/>
+          <!-- Changed email to karanyadavji971@gmail.com -->
+          <a href="mailto:karanyadavji971@gmail.com">karanyadavji971@gmail.com</a><br/>
           <strong>WhatsApp:</strong> <a href="https://wa.me/919458051202" target="_blank">+91 94580 51202</a>
         </div>
       </div>
@@ -570,6 +599,20 @@
         "Nokia 5.1", "Nokia 5.3", "Nokia 5.4", "Nokia 6.1", "Nokia 6.2",
         "Nokia 7.1", "Nokia 7.2", "Nokia 8.1", "Nokia 8.3",
         "Nokia 2.2", "Nokia 3.2", "Nokia 3.4", "Nokia 4.2"
+      ],
+      "Tecno": [
+        "Tecno Camon 11", "Tecno Camon 12", "Tecno Camon 15", "Tecno Camon 16", 
+        "Tecno Camon 17", "Tecno Camon 18", "Tecno Camon 19", 
+        "Tecno Spark 5", "Tecno Spark 6", "Tecno Spark 7", "Tecno Spark 8", 
+        "Tecno Spark 9", "Tecno Phantom 6", "Tecno Phantom 8", "Tecno Phantom 9",
+        "Tecno Pova 2", "Tecno Pova 3", "Tecno Pova 4", "Tecno Pop 4", "Tecno Pop 5"
+      ],
+      "Infinix": [
+        "Infinix Hot 8", "Infinix Hot 9", "Infinix Hot 10", "Infinix Hot 11", "Infinix Hot 12",
+        "Infinix Note 5", "Infinix Note 6", "Infinix Note 7", "Infinix Note 8", "Infinix Note 10",
+        "Infinix Note 11", "Infinix Note 12", "Infinix Zero 5", "Infinix Zero 6", 
+        "Infinix Zero 8", "Infinix Zero X", "Infinix S4", "Infinix S5", "Infinix Smart 4",
+        "Infinix Smart 5", "Infinix Smart 6"
       ],
       "Other": ["Other / अन्य"]
     };
