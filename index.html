@@ -95,25 +95,28 @@
       font-weight: 700;
     }
     
-    /* Text slider */
+    /* Text slider - Fixed marquee */
     .slider-wrap {
       overflow: hidden;
       background: #111;
       border-top: 1px solid #222;
       border-bottom: 1px solid #222;
+      position: relative;
     }
     
     .slider {
       display: flex;
-      gap: 50px;
-      padding: 12px;
+      width: max-content;
       animation: marquee 20s linear infinite;
-      white-space: nowrap;
+    }
+    
+    .slider:hover {
+      animation-play-state: paused;
     }
     
     @keyframes marquee {
-      from { transform: translateX(100%); }
-      to { transform: translateX(-100%); }
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
     }
     
     .slide {
@@ -123,6 +126,39 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      padding: 12px 25px;
+      white-space: nowrap;
+    }
+    
+    /* Rating slider - Fixed marquee */
+    .rating-wrap {
+      overflow: hidden;
+      background: #0f0f0f;
+      border-top: 1px solid #222;
+      margin-top: 40px;
+      border-bottom: 1px solid #222;
+      position: relative;
+    }
+    
+    .rating-slider {
+      display: flex;
+      width: max-content;
+      animation: marquee 25s linear infinite;
+    }
+    
+    .rating-slider:hover {
+      animation-play-state: paused;
+    }
+    
+    .rating {
+      font-size: 16px;
+      color: #ffcc00;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 15px 30px;
+      white-space: nowrap;
     }
     
     /* Main content */
@@ -233,32 +269,6 @@
       margin-top: 12px;
       font-weight: 600;
       text-align: center;
-    }
-    
-    /* Rating slider */
-    .rating-wrap {
-      overflow: hidden;
-      background: #0f0f0f;
-      border-top: 1px solid #222;
-      margin-top: 40px;
-      border-bottom: 1px solid #222;
-    }
-    
-    .rating-slider {
-      display: flex;
-      gap: 60px;
-      padding: 15px;
-      animation: marquee 25s linear infinite;
-      white-space: nowrap;
-    }
-    
-    .rating {
-      font-size: 16px;
-      color: #ffcc00;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
     
     /* Features section */
@@ -405,6 +415,7 @@
       </div>
     </div>
     
+    <!-- Service slider with duplicated content for seamless loop -->
     <div class="slider-wrap">
       <div class="slider">
         <div class="slide"><i class="fas fa-mobile"></i> <span id="sl1">स्क्रीन रिप्लेसमेंट</span></div>
@@ -413,6 +424,14 @@
         <div class="slide"><i class="fas fa-tint"></i> <span id="sl4">पानी से खराब मोबाइल</span></div>
         <div class="slide"><i class="fas fa-camera"></i> <span id="sl5">कैमरा रिपेयर</span></div>
         <div class="slide"><i class="fas fa-volume-up"></i> <span id="sl6">स्पीकर और माइक</span></div>
+        
+        <!-- Duplicated content for seamless loop -->
+        <div class="slide"><i class="fas fa-mobile"></i> <span>स्क्रीन रिप्लेसमेंट</span></div>
+        <div class="slide"><i class="fas fa-battery-quarter"></i> <span>बैटरी समस्या</span></div>
+        <div class="slide"><i class="fas fa-bolt"></i> <span>चार्जिंग इश्यू</span></div>
+        <div class="slide"><i class="fas fa-tint"></i> <span>पानी से खराब मोबाइल</span></div>
+        <div class="slide"><i class="fas fa-camera"></i> <span>कैमरा रिपेयर</span></div>
+        <div class="slide"><i class="fas fa-volume-up"></i> <span>स्पीकर और माइक</span></div>
       </div>
     </div>
   </header>
@@ -501,12 +520,19 @@
     </div>
   </main>
 
+  <!-- Rating slider with duplicated content for seamless loop -->
   <div class="rating-wrap">
     <div class="rating-slider">
       <div class="rating"><i class="fas fa-star"></i> <span id="rt1">★★★★★ 5000+ ग्राहकों ने भरोसा किया</span></div>
       <div class="rating"><i class="fas fa-star"></i> <span id="rt2">★★★★★ तेज़ और भरोसेमंद सर्विस</span></div>
       <div class="rating"><i class="fas fa-star"></i> <span id="rt3">★★★★★ असली पार्ट्स का इस्तेमाल</span></div>
       <div class="rating"><i class="fas fa-star"></i> <span id="rt4">★★★★★ ग्राहक संतुष्टि गारंटी</span></div>
+      
+      <!-- Duplicated content for seamless loop -->
+      <div class="rating"><i class="fas fa-star"></i> <span>★★★★★ 5000+ ग्राहकों ने भरोसा किया</span></div>
+      <div class="rating"><i class="fas fa-star"></i> <span>★★★★★ तेज़ और भरोसेमंद सर्विस</span></div>
+      <div class="rating"><i class="fas fa-star"></i> <span>★★★★★ असली पार्ट्स का इस्तेमाल</span></div>
+      <div class="rating"><i class="fas fa-star"></i> <span>★★★★★ ग्राहक संतुष्टि गारंटी</span></div>
     </div>
   </div>
 
