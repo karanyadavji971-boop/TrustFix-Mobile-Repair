@@ -1,17 +1,6 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=AW-332069918">
-</script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'AW-332069918');
-</script>
-  
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TrustFix Mobile Repair</title>
@@ -26,6 +15,7 @@
       --accent: #38bdf8;
       --radius: 18px;
       --gradient: linear-gradient(135deg, var(--brand), var(--accent));
+      --warning: #f59e0b;
     }
     
     * {
@@ -39,6 +29,7 @@
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
+      padding-bottom: 20px;
     }
     
     header {
@@ -93,6 +84,38 @@
       background: var(--accent);
       color: #000;
       font-weight: 700;
+      border-color: var(--accent);
+    }
+    
+    /* Disclaimer Banner */
+    .disclaimer-banner {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--warning);
+      border-left: 4px solid var(--warning);
+      padding: 12px 20px;
+      margin: 15px auto;
+      max-width: 1000px;
+      border-radius: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    
+    .disclaimer-banner i {
+      color: var(--warning);
+      font-size: 20px;
+      margin-top: 2px;
+    }
+    
+    .disclaimer-text {
+      flex: 1;
+    }
+    
+    .disclaimer-text p {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.5;
     }
     
     /* Text slider - Fixed marquee */
@@ -174,6 +197,7 @@
       border-radius: var(--radius);
       border: 1px solid #333;
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      position: relative;
     }
     
     .card h1 {
@@ -400,6 +424,83 @@
       transform: translateY(-2px);
       box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3);
     }
+    
+    /* Issue suggestions styles */
+    .suggestions-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .toggle-suggestions {
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .toggle-suggestions:hover {
+      background: rgba(56, 189, 248, 0.1);
+    }
+    
+    .suggestions-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    
+    .suggestions-container.show {
+      max-height: 200px;
+      margin-bottom: 15px;
+      overflow-y: auto;
+    }
+    
+    .suggestion-chip {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .suggestion-chip:hover {
+      background: rgba(56, 189, 248, 0.2);
+      transform: translateY(-2px);
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .suggestions-container {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+      
+      .topbar {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .card {
+        padding: 20px;
+      }
+    }
+
+    /* Language indicator - HIDDEN */
+    .lang-indicator {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -437,9 +538,18 @@
   </header>
 
   <main class="container">
+    <!-- Disclaimer Banner -->
+    <div class="disclaimer-banner" id="disclaimerBanner">
+      <i class="fas fa-exclamation-circle"></i>
+      <div class="disclaimer-text">
+        <p id="disclaimerText">महत्वपूर्ण सूचना: कृपया फॉर्म भरते समय अपने मोबाइल का सही मॉडल नंबर सिलेक्ट करें। गलत मॉडल सिलेक्ट करने से प्राइस में अंतर आ सकता है और आपको गलत जानकारी मिल सकती है। सही मॉडल जानकारी देकर आप सही प्राइस और सर्विस का अनुभव प्राप्त कर सकते हैं。</p>
+      </div>
+    </div>
+
     <div class="card">
+      <div class="lang-indicator" id="langIndicator">HI</div>
       <h1 id="formTitle">मरम्मत अनुरोध फ़ॉर्म</h1>
-      <p class="sub" id="formSub">अपनी डिटेल भरें — हम WhatsApp पर तुरंत जवाब देंगे।</p>
+      <p class="sub" id="formSub">अपनी डिटेल भरें — हम WhatsApp पर तुरंत जवाब देंगे。</p>
 
       <form id="repairForm">
         <div class="row">
@@ -482,8 +592,17 @@
         </div>
 
         <div>
-          <label id="labIssue" for="issue"><i class="fas fa-tools"></i> समस्या</label>
+          <div class="suggestions-label">
+            <label id="labIssue" for="issue"><i class="fas fa-tools"></i> समस्या</label>
+            <button type="button" class="toggle-suggestions" id="toggleSuggestions">
+              <i class="fas fa-lightbulb"></i> <span id="suggestionBtnText">सुझाव देखें</span>
+            </button>
+          </div>
           <textarea id="issue" rows="3" placeholder="जैसे: स्क्रीन टूटी है, चार्जिंग नहीं हो रही…"></textarea>
+          
+          <div class="suggestions-container" id="suggestionsContainer">
+            <!-- Suggestions will be added dynamically by JavaScript -->
+          </div>
         </div>
 
         <button type="submit" class="btn primary">
@@ -496,7 +615,7 @@
           <i class="fas fa-phone"></i> कॉल करें: 9267982460
         </a>
         
-        <div class="note" id="privacyNote">आपको तुरंत संपर्क किया जाएगा — कृपया प्रतीक्षा करें।</div>
+        <div class="note" id="privacyNote">आपको तुरंत संपर्क किया जाएगा — कृपया प्रतीक्षा करें。</div>
       </form>
     </div>
 
@@ -545,7 +664,6 @@
         </div>
         <div>
           <strong>Email</strong><br/>
-          <!-- Changed email to karanyadavji971@gmail.com -->
           <a href="mailto:karanyadavji971@gmail.com">karanyadavji971@gmail.com</a><br/>
           <strong>WhatsApp:</strong> <a href="https://wa.me/919458051202" target="_blank">+91 94580 51202</a>
         </div>
@@ -568,7 +686,7 @@
         "iPhone 7", "iPhone 7 Plus", "iPhone 8", "iPhone 8 Plus", 
         "iPhone X", "iPhone XR", "iPhone XS", "iPhone XS Max",
         "iPhone 11", "iPhone 11 Pro", "iPhone 11 Pro Max",
-        "iPhone 12", "iPhone 12 Mini", "iPhone 12 Pro", "iPhone 12 Pro Max",
+        "iPhone 极速版", "iPhone 12 Mini", "iPhone 12 Pro", "iPhone 12 Pro Max",
         "iPhone 13", "iPhone 13 Mini", "iPhone 13 Pro", "iPhone 13 Pro Max",
         "iPhone 14", "iPhone 14 Plus", "iPhone 14 Pro", "iPhone 14 Pro Max",
         "iPhone 15", "iPhone 15 Plus", "iPhone 15 Pro", "iPhone 15 Pro Max"
@@ -577,7 +695,7 @@
         "Galaxy S10", "Galaxy S10 Plus", "Galaxy S10e",
         "Galaxy S20", "Galaxy S20 Plus", "Galaxy S20 Ultra",
         "Galaxy S21", "Galaxy S21 Plus", "Galaxy S21 Ultra",
-        "Galaxy S22", "Galaxy S22 Plus", "Galaxy S22 Ultra",
+        "Galaxy S22", "极速版 S22 Plus", "Galaxy S22 Ultra",
         "Galaxy S23", "Galaxy S23 Plus", "Galaxy S23 Ultra",
         "Galaxy A10", "Galaxy A20", "Galaxy A30", "Galaxy A50",
         "Galaxy A51", "Galaxy A52", "Galaxy A53", "Galaxy A54",
@@ -596,7 +714,7 @@
       "Realme": [
         "Realme 5", "Realme 5 Pro", "Realme 6", "Realme 6 Pro",
         "Realme 7", "Realme 7 Pro", "Realme 8", "Realme 8 Pro",
-        "Realme 9", "Realme 9 Pro", "Realme 9 Pro Plus",
+        "Realme 9", "Realme 9极速版", "Realme 9 Pro Plus",
         "Realme 10", "Realme 10 Pro", "Realme 10 Pro Plus",
         "Realme Narzo 20", "Realme Narzo 30", "Realme Narzo 50",
         "Realme C11", "Realme C15", "Realme C21", "Realme C25"
@@ -630,9 +748,9 @@
       ],
       "Tecno": [
         "Tecno Camon 11", "Tecno Camon 12", "Tecno Camon 15", "Tecno Camon 16", 
-        "Tecno Camon 17", "Tecno Camon 18", "Tecno Camon 19", 
-        "Tecno Spark 5", "Tecno Spark 6", "Tecno Spark 7", "Tecno Spark 8", 
-        "Tecno Spark 9", "Tecno Phantom 6", "Tecno Phantom 8", "Tecno Phantom 9",
+        "Tecno Camon 17", "Tecno Camon 18", "极速版 Camon 19", 
+        "Tecno Spark 5", "Tecno Spark 极速版", "Tecno Spark 7", "Tecno Spark 8", 
+        "极速版 Spark 9", "Tecno Phantom 6", "Tecno Phantom 8", "Tecno Phantom 9",
         "Tecno Pova 2", "Tecno Pova 3", "Tecno Pova 4", "Tecno Pop 4", "Tecno Pop 5"
       ],
       "Infinix": [
@@ -643,6 +761,54 @@
         "Infinix Smart 5", "Infinix Smart 6"
       ],
       "Other": ["Other / अन्य"]
+    };
+
+    // Common mobile issues for suggestions
+    const commonIssues = {
+      hi: [
+        "स्क्रीन टूट गई है",
+        "बैटरी जल्दी खत्म होती है",
+        "चार्जिंग नहीं हो रही",
+        "स्पीकर काम नहीं कर रहा",
+        "माइक काम नहीं कर रहा",
+        "कैमरा खराब है",
+        "वाई-फाई नहीं चल रहा",
+        "ब्लूटूथ नहीं चल रहा",
+        "पानी लग गया है",
+        "स्लो चल रहा है",
+        "हैंग हो रहा है",
+        "बटन काम नहीं कर रहे",
+        "कॉल नहीं आ रही",
+        "極速版 काम नहीं कर रहा",
+        "सॉफ्टवेयर प्रॉब्लम",
+        "पावर बटन खराब है",
+        "वाइब्रेशन नहीं आ रहा",
+        "नेटवर्क इश्यू",
+        "होम बटन खराब",
+        "फिंगरप्रिंट सेंसर खराब"
+      ],
+      en: [
+        "Screen is broken",
+        "Battery draining fast",
+        "Not charging",
+        "Speaker not working",
+        "Microphone not working",
+        "Camera not working",
+        "Wi-Fi not working",
+        "Bluetooth not working",
+        "Water damage",
+        "Phone is slow",
+        "Phone keeps hanging",
+        "Buttons not working",
+        "Not receiving calls",
+        "Touch not working",
+        "Software problem",
+        "Power button not working",
+        "Vibration not working",
+        "Network issues",
+        "Home button not working",
+        "Fingerprint sensor not working"
+      ]
     };
 
     // Function to update models based on selected brand
@@ -660,7 +826,7 @@
         defaultOption.value = '';
         defaultOption.disabled = true;
         defaultOption.selected = true;
-        defaultOption.textContent = '— मॉडल चुनें —';
+        defaultOption.textContent = document.documentElement.lang === 'hi' ? '— मॉडल चुनें —' : '— Select Model —';
         modelSelect.appendChild(defaultOption);
         
         // Add models for the selected brand
@@ -674,7 +840,7 @@
         // Add "Other" option
         const otherOption = document.createElement('option');
         otherOption.value = 'otherText';
-        otherOption.textContent = 'Other / लिखें…';
+        otherOption.textContent = document.documentElement.lang === 'hi' ? 'Other / लिखें…' : 'Other / Specify…';
         modelSelect.appendChild(otherOption);
         
         modelSelect.disabled = false;
@@ -684,7 +850,7 @@
         defaultOption.value = '';
         defaultOption.disabled = true;
         defaultOption.selected = true;
-        defaultOption.textContent = '— पहले ब्रांड चुनें —';
+        defaultOption.textContent = document.documentElement.lang === 'hi' ? '— पहले ब्रांड चुनें —' : '— Select Brand First —';
         modelSelect.appendChild(defaultOption);
         modelSelect.disabled = true;
       }
@@ -697,6 +863,7 @@
       if (modelSel.value === 'otherText') {
         modelOther.style.display = 'block';
         modelOther.setAttribute('required', 'true');
+        modelOther.placeholder = document.documentElement.lang === 'hi' ? 'अपना मॉडल लिखें' : 'Enter your model';
       } else {
         modelOther.style.display = 'none';
         modelOther.removeAttribute('required');
@@ -714,9 +881,68 @@
       const modelValue = modelSel.value === 'otherText' ? (modelOther.value.trim() || 'Not specified') : modelSel.value;
       const issue = document.getElementById('issue').value.trim();
       
-      const msg = `नमस्ते, मुझे मोबाइल रिपेयर चाहिए।%0Aनाम: ${name}%0Aनंबर: ${phone}%0Aब्रांड: ${brand}%0Aमॉडल: ${modelValue}%0A${issue ? `समस्या: ${issue}%0A` : ''}— TrustFix वेबसाइट फ़ॉर्म`;
+      const isHindi = document.documentElement.lang === 'hi';
+      const msg = isHindi ? 
+        `नमस्ते, मुझे मोबाइल रिपेयर चाहिए।%0Aनाम: ${name}%0Aनंबर: ${phone}%0Aब्रांड: ${brand}%0Aमॉडल: ${modelValue}%0A${issue ? `समस्या: ${issue}%0A` : ''}— TrustFix वेबसाइट फ़ॉर्म` :
+        `Hello, I need mobile repair service.%0AName: ${name}%0ANumber: ${phone}%0ABrand: ${brand}%0AModel: ${modelValue}%0A${issue ? `Issue: ${issue}%0A` : ''}— TrustFix Website Form`;
+      
       window.open(`https://wa.me/919458051202?text=${msg}`, '_blank');
     });
+
+    // Toggle suggestions visibility
+    const toggleSuggestionsBtn = document.getElementById('toggleSuggestions');
+    const suggestionsContainer = document.getElementById('suggestionsContainer');
+    
+    toggleSuggestionsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      suggestionsContainer.classList.toggle('show');
+      updateSuggestionButtonText();
+      
+      // Prevent page scroll when suggestions are shown
+      if (suggestionsContainer.classList.contains('show')) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = 'auto';
+      }
+    });
+    
+    function updateSuggestionButtonText() {
+      const isHindi = document.documentElement.lang === 'hi';
+      if (suggestions极速版.classList.contains('show')) {
+        toggleSuggestionsBtn.innerHTML = '<i class="fas fa-times"></i> ' + (isHindi ? 'सुझाव छुपाएं' : 'Hide Suggestions');
+      } else {
+        toggleSuggestionsBtn.innerHTML = '<i class="fas fa-lightbulb"></i> ' + (isHindi ? 'सुझाव देखें' : 'Show Suggestions');
+      }
+    }
+    
+    // Populate suggestions based on language
+    function populateSuggestions(lang) {
+      suggestionsContainer.innerHTML = '';
+      const issues = commonIssues[lang];
+      
+      issues.forEach(issue => {
+        const chip = document.createElement('div');
+        chip.className = 'suggestion-chip';
+        chip.textContent = issue;
+        chip.addEventListener('click', () => {
+          const issueTextarea = document.getElementById('issue');
+          const currentValue = issueTextarea.value.trim();
+          
+          if (currentValue) {
+            issueTextarea.value = currentValue + ', ' + issue;
+          } else {
+            issueTextarea.value = issue;
+          }
+          
+          // Auto-close suggestions after selection
+          suggestionsContainer.classList.remove('show');
+          document.body.style.overflow = 'auto';
+          updateSuggestionButtonText();
+        });
+        
+        suggestionsContainer.appendChild(chip);
+      });
+    }
 
     // Language Packs
     const langPacks = {
@@ -725,7 +951,7 @@
         formTitle: "मरम्मत अनुरोध फ़ॉर्म",
         formSub: "अपनी डिटेल भरें — हम WhatsApp पर तुरंत जवाब देंगे।",
         labName: "नाम", labPhone: "मोबाइल नंबर", labBrand: "फोन ब्रांड", labModel: "मॉडल", labIssue: "समस्या",
-        btnTxt: "WhatsApp पर भेजें", privacy: "आपको तुरंत संपर्क किया जाएगा — कृपया प्रतीक्षा करें।",
+        btnTxt: "WhatsApp पर भेजें", privacy: "आपको तुरंत संपर्क किया जाएगा — कृपया प्रतीक्षा करें。",
         addrHead: "पता", addrText: "सेक्टर 24, रोहिणी, दिल्ली-86",
         sl1: "स्क्रीन रिप्लेसमेंट", sl2: "बैटरी समस्या", sl3: "चार्जिंग इश्यू", 
         sl4: "पानी से खराब मोबाइल", sl5: "कैमरा रिपेयर", sl6: "स्पीकर और माइक",
@@ -733,7 +959,9 @@
         rt3: "★★★★★ असली पार्ट्स का इस्तेमाल", rt4: "★★★★★ ग्राहक संतुष्टि गारंटी",
         feature1Title: "पेशेवर मरम्मत", feature1Desc: "10+ years अनुभव के साथ विशेषज्ञ तकनीशियन",
         feature2Title: "गुणवत्ता की गारंटी", feature2Desc: "90 दिनों की वारंटी सभी सेवाओं पर",
-        feature3Title: "मुफ़्त पिकअप & डिलीवरी", feature3Desc: "दिल्ली भर में निःशुल्क सेवा"
+        feature3Title: "मुफ़्त पिकअप & डिलीवरी", feature3极速版: "दिल्ली भर में निःशुल्क सेवा",
+        disclaimer: "महत्वपूर्ण सूचना: कृपया फॉर्म भरते समय अपने मोबाइल का सही मॉडल नंबर सिलेक्ट करें। गलत मॉडल सिलेक्ट करने से प्राइस में अंतर आ सकता है और आपको गलत जानकारी मिल सकती है। सही मॉडल जानकारी देकर आप सही प्राइस और सर्विस का अनुभव प्राप्त कर सकते हैं。",
+        suggestionBtnText: "सुझाव देखें"
       },
       en: {
         title: "TrustFix Mobile Repair",
@@ -749,7 +977,9 @@
         rt3: "★★★★★ Genuine Parts Used", rt4: "★★★★★ Customer Satisfaction Guaranteed",
         feature1Title: "Professional Repair", feature1Desc: "Expert technicians with 10+ years experience",
         feature2Title: "Quality Guarantee", feature2Desc: "90 days warranty on all services",
-        feature3Title: "Free Pickup & Delivery", feature3Desc: "Free service across Delhi"
+        feature3Title: "Free Pickup & Delivery", feature3Desc: "Free service across Delhi",
+        disclaimer: "Important Notice: Please select the correct mobile model number when filling out the form. Selecting the wrong model may result in price differences and you may receive incorrect information. By providing the correct model information, you can get the right price and service experience.",
+        suggestionBtnText: "Show Suggestions"
       }
     };
 
@@ -769,13 +999,15 @@
       el('privacyNote').textContent = t.privacy;
       el('addrHead').textContent = t.addrHead;
       el('addrText').textContent = t.addrText;
-      el('sl1').textContent = t.sl1; el('sl2').textContent = t.sl2; el('sl3').textContent = t.sl3;
-      el('sl4').textContent = t.sl4; el('sl5').textContent = t.sl5; el('sl6').textContent = t.sl6;
+      el('sl1').textContent = t.s极速版; el('sl2').textContent = t.sl2; el('sl3').textContent = t.sl3;
+      el('sl4').textContent = t.sl4; el('sl5').textContent = t.sl5; el('sl6').text极速版 = t.sl6;
       el('rt1').textContent = t.rt1; el('rt2').textContent = t.rt2; 
       el('rt3').textContent = t.rt3; el('rt4').textContent = t.rt4;
       el('feature1Title').textContent = t.feature1Title; el('feature1Desc').textContent = t.feature1Desc;
       el('feature2Title').textContent = t.feature2Title; el('feature2Desc').textContent = t.feature2Desc;
       el('feature3Title').textContent = t.feature3Title; el('feature3Desc').textContent = t.feature3Desc;
+      el('disclaimerText').textContent = t.disclaimer;
+      el('suggestionBtnText').textContent = t.suggestionBtnText;
       
       // Update placeholders based on language
       document.getElementById('name').placeholder = l === 'hi' ? 'अपना नाम' : 'Your Name';
@@ -785,15 +1017,38 @@
         document.getElementById('modelOther').placeholder = l === 'hi' ? 'अपना मॉडल लिखें' : 'Enter your model';
       }
       
+      // Update language indicator
+      document.getElementById('langIndicator').textContent = l === 'hi' ? 'HI' : 'EN';
+      
+      // Update models dropdown based on language
+      updateModels();
+      
+      // Update suggestions based on language
+      populateSuggestions(l);
+      updateSuggestionButtonText();
+      
       document.documentElement.lang = (l === 'hi' ? 'hi' : 'en');
+      
+      // Fix: Properly update active state for both buttons
       btnHi.classList.toggle('active', l === 'hi');
       btnEn.classList.toggle('active', l === 'en');
     }
     
     const btnHi = document.getElementById('btnHi');
     const btnEn = document.getElementById('btnEn');
-    btnHi.addEventListener('click', () => applyLang('hi'));
-    btnEn.addEventListener('click', () => applyLang('en'));
+    
+    // Fix: Add proper event listeners to ensure active state works correctly
+    btnHi.addEventListener('click', function() {
+      btnHi.classList.add('active');
+      btnEn.classList.remove('active');
+      applyLang('hi');
+    });
+    
+    btnEn.addEventListener('click', function() {
+      btnEn.classList.add('active');
+      btnHi.classList.remove('active');
+      applyLang('en');
+    });
     
     // Initialize with Hindi
     applyLang('hi');
