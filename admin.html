@@ -1,253 +1,294 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trust Fix Mobile Repair - Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Trust Fix - Admin Panel</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet" />
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Segoe UI',Roboto,sans-serif;background:#f0f2f5;color:#1a1a1a;}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f4f6fa; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .stat-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: 0.3s; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+        .order-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: 0.3s; border-left: 4px solid #3b82f6; }
+        .order-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-completed { background: #d1fae5; color: #065f46; }
+        .badge-repair { background: #dbeafe; color: #1e40af; }
+        .badge-urgent { background: #fee2e2; color: #991b1b; }
+        .badge-cancelled { background: #f3f4f6; color: #6b7280; }
+        .badge-confirmed { background: #dbeafe; color: #1e40af; }
+        .badge-shipped { background: #ede9fe; color: #5b21b6; }
+        .badge-delivered { background: #d1fae5; color: #065f46; }
+        .btn { padding: 6px 14px; border-radius: 8px; font-weight: 600; font-size: 11px; border: none; cursor: pointer; transition: 0.3s; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-outline { background: transparent; border: 2px solid #e5e7eb; color: #374151; }
+        .btn-outline:hover { background: #f3f4f6; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-warning:hover { background: #d97706; }
+        .btn-confirm { background: #8b5cf6; color: white; }
+        .btn-confirm:hover { background: #7c3aed; }
+        .btn-delivered { background: #06b6d4; color: white; }
+        .btn-delivered:hover { background: #0891b2; }
+        .search-box { border: 2px solid #e5e7eb; border-radius: 12px; padding: 10px 16px 10px 44px; width: 100%; outline: none; transition: 0.3s; background: white; }
+        .search-box:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
+        .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: #64748b; transition: 0.3s; cursor: pointer; text-decoration: none; }
+        .sidebar-link:hover, .sidebar-link.active { background: #e0e7ff; color: #1e40af; }
+        .sidebar-link.active { background: #dbeafe; font-weight: 600; border-right: 4px solid #3b82f6; }
+        .mobile-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-around; padding: 8px 0; z-index: 100; }
+        .mobile-nav a { display: flex; flex-direction: column; align-items: center; color: #94a3b8; text-decoration: none; font-size: 10px; padding: 4px 12px; border-radius: 12px; transition: 0.3s; }
+        .mobile-nav a.active { color: #3b82f6; background: #eff6ff; }
+        .mobile-nav a .material-symbols-outlined { font-size: 24px; }
+        @media (min-width: 768px) { .mobile-nav { display: none; } }
+        .loading { text-align: center; padding: 40px; color: #94a3b8; }
+        .loading .spinner { border: 4px solid #e5e7eb; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .toast { position: fixed; bottom: 100px; right: 20px; background: #1e293b; color: white; padding: 14px 24px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); z-index: 200; animation: slideUp 0.4s ease; max-width: 90%; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .refresh-btn { background: #3b82f6; color: white; padding: 10px 20px; border-radius: 12px; border: none; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
+        .refresh-btn:hover { background: #2563eb; }
+        .login-box{max-width:380px;margin:80px auto;background:#fff;border-radius:20px;padding:40px 30px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.08);}
+        .login-box h2{font-size:24px;font-weight:700;color:#1a1a1a;}
+        .login-box p{font-size:14px;color:#888;margin:8px 0 24px;}
+        .google-btn{background:#fff;border:1px solid #e0e0e0;padding:14px;border-radius:12px;width:100%;cursor:pointer;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:10px;transition:0.15s;}
+        .google-btn:hover{background:#f5f5f5;}
+        .login-error{color:#e74c3c;font-size:13px;margin-top:10px;display:none;}
+        .order-detail-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;justify-content:center;align-items:center;z-index:300;padding:20px;}
+        .order-detail-content{background:white;border-radius:20px;padding:30px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;}
+        .customer-item{cursor:pointer;transition:0.2s;padding:10px;border-radius:10px;}
+        .customer-item:hover{background:#f3f4f6;}
+        .cancel-reason{background:#fef2f2;padding:10px;border-radius:10px;border-left:4px solid #ef4444;margin:10px 0;font-size:13px;}
+        .cancel-by{font-size:12px;color:#6b7280;margin-top:4px;}
+        .otp-display{background:#f0f9ff;padding:6px 12px;border-radius:10px;border:1px solid #bae6fd;display:inline-block;font-family:monospace;font-size:16px;font-weight:bold;color:#0369a1;letter-spacing:3px;}
+        .status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+        .status-pending{background:#fef3c7;color:#92400e;}
+        .status-confirmed{background:#dbeafe;color:#1e40af;}
+        .status-shipped{background:#ede9fe;color:#5b21b6;}
+        .status-delivered{background:#d1fae5;color:#065f46;}
+        .status-completed{background:#d1fae5;color:#065f46;}
+        .status-cancelled{background:#f3f4f6;color:#6b7280;}
         
-        .admin-header{background:#1a237e;padding:15px 25px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,0.2);}
-        .admin-header h1{color:white;font-size:22px;}
-        .admin-header .brand-trust{color:#ff6b35;}
-        .admin-header .brand-fix{color:#ffffff;}
-        .admin-header .badge{background:#ff9800;color:#1a237e;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:bold;margin-left:8px;}
-        .admin-header .admin-info{display:flex;align-items:center;gap:12px;}
-        .admin-header .admin-email{color:#9fa8da;font-size:13px;}
-        .admin-header .logout-btn{background:#e74c3c;color:white;border:none;padding:6px 16px;border-radius:20px;cursor:pointer;font-weight:bold;font-size:12px;}
-        .admin-header .logout-btn:hover{background:#c0392b;}
+        .customer-details-box{background:#f0f9ff;padding:12px;border-radius:10px;margin:8px 0;border:1px solid #bae6fd;}
+        .customer-details-box .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;}
+        .customer-details-box .detail-grid .full-width{grid-column:1/-1;}
+        .customer-details-box strong{color:#1e293b;}
         
-        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;padding:20px;max-width:1400px;margin:0 auto;}
-        .stat-card{background:white;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border-left:4px solid #1a237e;}
-        .stat-card .number{font-size:28px;font-weight:bold;color:#1a237e;}
-        .stat-card .label{font-size:12px;color:#666;margin-top:4px;}
-        .stat-card .icon{font-size:24px;float:right;opacity:0.3;}
-        .stat-card.pending{border-left-color:#ff9800;}
-        .stat-card.pending .number{color:#ff9800;}
-        .stat-card.shipped{border-left-color:#2196f3;}
-        .stat-card.shipped .number{color:#2196f3;}
-        .stat-card.completed{border-left-color:#4caf50;}
-        .stat-card.completed .number{color:#4caf50;}
-        .stat-card.cancelled{border-left-color:#e74c3c;}
-        .stat-card.cancelled .number{color:#e74c3c;}
-        .stat-card.repair{border-left-color:#9c27b0;}
-        .stat-card.repair .number{color:#9c27b0;}
+        .items-box{background:#f8fafc;padding:8px 12px;border-radius:8px;margin:6px 0;border:1px solid #e2e8f0;}
+        .items-box .item-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e2e8f0;font-size:13px;}
+        .items-box .item-row:last-child{border-bottom:none;}
+        .items-box .item-name{color:#1e293b;}
+        .items-box .item-price{color:#059669;font-weight:600;}
         
-        .tabs{display:flex;flex-wrap:wrap;gap:6px;padding:0 20px;max-width:1400px;margin:0 auto;border-bottom:2px solid #e0e0e0;}
-        .tab-btn{background:transparent;border:none;padding:10px 20px;cursor:pointer;font-weight:600;font-size:14px;color:#666;border-bottom:3px solid transparent;transition:all 0.3s;}
-        .tab-btn:hover{color:#1a237e;}
-        .tab-btn.active{color:#1a237e;border-bottom-color:#1a237e;}
-        .tab-btn .count{background:#e0e0e0;padding:1px 8px;border-radius:12px;font-size:11px;margin-left:5px;}
-        .tab-btn.active .count{background:#1a237e;color:white;}
+        /* ===== NEW: Website Source Badge ===== */
+        .source-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; }
+        .source-dszone { background: #dbeafe; color: #1e40af; }
+        .source-trustfix { background: #fef3c7; color: #92400e; }
+        .source-other { background: #f3f4f6; color: #6b7280; }
         
-        .content-area{max-width:1400px;margin:0 auto;padding:20px;}
-        .tab-content{display:none;}
-        .tab-content.active{display:block;}
+        /* ===== NEW: Customer Name Highlight ===== */
+        .highlight-match { background: #fef08a; padding: 0 2px; border-radius: 2px; }
         
-        .filter-bar{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;align-items:center;}
-        .filter-bar input,.filter-bar select{padding:8px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:white;}
-        .filter-bar .search-box{flex:1;min-width:200px;}
-        .filter-bar .refresh-btn{background:#1a237e;color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:bold;}
-        .filter-bar .refresh-btn:hover{background:#283593;}
-        
-        .order-card{background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 6px rgba(0,0,0,0.06);border-left:4px solid #1a237e;transition:all 0.3s;}
-        .order-card:hover{box-shadow:0 4px 15px rgba(0,0,0,0.1);}
-        .order-card .order-header{display:flex;justify-content:space-between;flex-wrap:wrap;align-items:center;gap:8px;}
-        .order-card .order-id{font-weight:700;font-size:15px;color:#1a237e;}
-        .order-card .order-date{font-size:12px;color:#999;}
-        .order-card .customer-name{font-weight:600;font-size:14px;}
-        .order-card .customer-phone{color:#555;font-size:13px;}
-        .order-card .customer-address{color:#777;font-size:12px;margin-top:4px;}
-        .order-card .order-items{background:#f8f9fa;padding:10px;border-radius:8px;margin:8px 0;font-size:13px;color:#444;}
-        .order-card .order-total{font-weight:700;font-size:16px;color:#1a237e;}
-        .order-card .order-payment{font-size:12px;color:#666;}
-        .order-card .order-otp{background:#1a237e;color:white;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;display:inline-block;margin-left:8px;}
-        
-        .status-badge{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block;}
-        .status-pending{background:#fff3e0;color:#e65100;}
-        .status-shipped{background:#e3f2fd;color:#0d47a1;}
-        .status-completed{background:#e8f5e9;color:#1b5e20;}
-        .status-cancelled{background:#ffebee;color:#b71c1c;}
-        
-        .action-buttons{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
-        .action-btn{padding:5px 14px;border:none;border-radius:20px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.3s;}
-        .action-btn.ship{background:#2196f3;color:white;}
-        .action-btn.ship:hover{background:#1976d2;}
-        .action-btn.complete{background:#4caf50;color:white;}
-        .action-btn.complete:hover{background:#388e3c;}
-        .action-btn.cancel{background:#e74c3c;color:white;}
-        .action-btn.cancel:hover{background:#c0392b;}
-        .action-btn.delete{background:#e74c3c;color:white;}
-        .action-btn.delete:hover{background:#c0392b;}
-        .action-btn:disabled{opacity:0.5;cursor:not-allowed;}
-        
-        .repair-card{background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 6px rgba(0,0,0,0.06);border-left:4px solid #9c27b0;}
-        .repair-card:hover{box-shadow:0 4px 15px rgba(0,0,0,0.1);}
-        .repair-card .repair-header{display:flex;justify-content:space-between;flex-wrap:wrap;align-items:center;gap:8px;}
-        .repair-card .repair-id{font-weight:700;font-size:15px;color:#9c27b0;}
-        
-        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;z-index:2000;}
-        .modal-content{background:white;border-radius:16px;padding:25px;width:92%;max-width:500px;max-height:85vh;overflow-y:auto;}
-        .modal-content h3{color:#1a237e;margin-bottom:15px;}
-        .modal-content .close-modal{float:right;font-size:24px;cursor:pointer;color:#666;}
-        .modal-content .close-modal:hover{color:#1a237e;}
-        .modal-content label{font-weight:600;font-size:13px;display:block;margin-top:10px;margin-bottom:4px;}
-        .modal-content input,.modal-content textarea,.modal-content select{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;}
-        .modal-content textarea{resize:vertical;min-height:60px;}
-        .modal-content .modal-buttons{display:flex;gap:10px;margin-top:15px;}
-        .modal-content .modal-buttons button{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;flex:1;}
-        .modal-content .modal-buttons .save-btn{background:#1a237e;color:white;}
-        .modal-content .modal-buttons .save-btn:hover{background:#283593;}
-        .modal-content .modal-buttons .cancel-btn{background:#e0e0e0;color:#333;}
-        .modal-content .modal-buttons .cancel-btn:hover{background:#bdbdbd;}
-        
-        .empty-state{text-align:center;padding:40px;color:#999;}
-        .empty-state .icon{font-size:48px;display:block;margin-bottom:10px;opacity:0.3;}
-        
-        .toast{position:fixed;bottom:30px;right:30px;background:#1a1a2e;color:white;padding:14px 24px;border-radius:12px;display:none;z-index:3000;font-size:14px;max-width:350px;box-shadow:0 4px 20px rgba(0,0,0,0.3);}
-        .toast.success{background:#2e7d32;}
-        .toast.error{background:#c62828;}
-        .toast.info{background:#1a237e;}
-        
-        @media (max-width:768px){
-            .admin-header h1{font-size:17px;}
-            .admin-header .admin-email{font-size:11px;}
-            .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px;padding:15px;}
-            .stat-card .number{font-size:22px;}
-            .tabs{padding:0 10px;overflow-x:auto;flex-wrap:nowrap;}
-            .tab-btn{font-size:12px;padding:8px 12px;white-space:nowrap;}
-            .content-area{padding:10px;}
-            .filter-bar{flex-direction:column;}
-            .filter-bar .search-box{min-width:100%;}
-            .order-card .order-header{flex-direction:column;align-items:flex-start;}
-            .order-card .order-items{font-size:12px;}
-        }
+        /* ===== NEW: Website Filter ===== */
+        .website-filter-btn { padding: 6px 14px; border-radius: 20px; border: 2px solid #e5e7eb; background: white; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.3s; }
+        .website-filter-btn:hover { border-color: #3b82f6; }
+        .website-filter-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-<!-- ===== ADMIN HEADER ===== -->
-<div class="admin-header">
-    <div>
-        <h1>
-            <i class="fas fa-tools"></i> 
-            <span class="brand-trust">Trust</span> 
-            <span class="brand-fix">Fix</span> 
-            <span style="color:#ff9800;">Mobile</span> Repair
-            <span class="badge">ADMIN</span>
-        </h1>
-    </div>
-    <div class="admin-info">
-        <span class="admin-email" id="adminEmail">admin@trustfix.com</span>
-        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+<!-- ========== LOGIN SCREEN ========== -->
+<div id="loginScreen">
+    <div class="login-box">
+        <div style="font-size:48px;">📦</div>
+        <h2>Trust Fix Admin</h2>
+        <p>Manage your orders & repairs from all websites</p>
+        <button class="google-btn" onclick="loginWithGoogle()">
+            <svg width="22" height="22" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            Sign in with Google
+        </button>
+        <div id="loginError" class="login-error"></div>
     </div>
 </div>
 
-<!-- ===== STATS ===== -->
-<div class="stats-grid" id="statsGrid">
-    <div class="stat-card"><div class="number" id="totalOrders">0</div><div class="label">📦 Total Orders</div><div class="icon">📦</div></div>
-    <div class="stat-card pending"><div class="number" id="pendingOrders">0</div><div class="label">⏳ Pending</div><div class="icon">⏳</div></div>
-    <div class="stat-card shipped"><div class="number" id="shippedOrders">0</div><div class="label">🚚 Shipped</div><div class="icon">🚚</div></div>
-    <div class="stat-card completed"><div class="number" id="completedOrders">0</div><div class="label">✅ Completed</div><div class="icon">✅</div></div>
-    <div class="stat-card cancelled"><div class="number" id="cancelledOrders">0</div><div class="label">❌ Cancelled</div><div class="icon">❌</div></div>
-    <div class="stat-card repair"><div class="number" id="repairRequests">0</div><div class="label">🔧 Repair Requests</div><div class="icon">🔧</div></div>
-</div>
+<!-- ========== DASHBOARD ========== -->
+<div id="dashboardScreen" style="display:none;">
 
-<!-- ===== TABS ===== -->
-<div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('orders', this)">📋 Orders <span class="count" id="ordersCount">0</span></button>
-    <button class="tab-btn" onclick="switchTab('repairs', this)">🔧 Repairs <span class="count" id="repairsCount">0</span></button>
-    <button class="tab-btn" onclick="switchTab('cancelled', this)">❌ Cancelled <span class="count" id="cancelledCount">0</span></button>
-</div>
-
-<!-- ===== CONTENT ===== -->
-<div class="content-area">
-
-    <!-- ORDERS TAB -->
-    <div id="tab-orders" class="tab-content active">
-        <div class="filter-bar">
-            <input class="search-box" id="orderSearch" placeholder="🔍 Search by order ID, customer name, phone..." oninput="filterOrders()">
-            <select id="orderStatusFilter" onchange="filterOrders()">
-                <option value="all">All Status</option>
-                <option value="Pending">Pending</option>
-                <option value="Shipped">Shipped</option>
-                <option value="Completed">Completed</option>
-                <option value="Cancelled">Cancelled</option>
-            </select>
-            <button class="refresh-btn" onclick="loadAllData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+    <!-- SIDEBAR -->
+    <aside class="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 hidden md:block p-4 z-50">
+        <div class="flex items-center gap-3 mb-8 px-2">
+            <div class="w-10 h-10 bg-amber-600 rounded-xl flex items-center justify-center text-white font-bold text-xl">T</div>
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">Trust Fix</h1>
+                <p class="text-xs text-gray-400">Multi-Site Admin</p>
+            </div>
         </div>
-        <div id="ordersList"></div>
-    </div>
-
-    <!-- REPAIRS TAB -->
-    <div id="tab-repairs" class="tab-content">
-        <div class="filter-bar">
-            <input class="search-box" id="repairSearch" placeholder="🔍 Search by repair ID, customer name, phone..." oninput="filterRepairs()">
-            <select id="repairStatusFilter" onchange="filterRepairs()">
-                <option value="all">All Status</option>
-                <option value="Pending">Pending</option>
-                <option value="Shipped">Shipped</option>
-                <option value="Completed">Completed</option>
-                <option value="Cancelled">Cancelled</option>
-            </select>
-            <button class="refresh-btn" onclick="loadAllData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        <nav class="space-y-1">
+            <a href="#" class="sidebar-link active" onclick="showPage('dashboard')">
+                <span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+            <a href="#" class="sidebar-link" onclick="showPage('orders')">
+                <span class="material-symbols-outlined">shopping_bag</span> Orders
+            </a>
+            <a href="#" class="sidebar-link" onclick="showPage('repairs')">
+                <span class="material-symbols-outlined">build</span> Repairs
+            </a>
+            <a href="#" class="sidebar-link" onclick="showPage('customers')">
+                <span class="material-symbols-outlined">people</span> Customers
+            </a>
+            <a href="#" class="sidebar-link" onclick="showPage('activity')">
+                <span class="material-symbols-outlined">notifications</span> Activity
+            </a>
+        </nav>
+        <div class="absolute bottom-6 left-4 right-4 pt-4 border-t border-gray-200">
+            <div class="flex items-center gap-3 px-2">
+                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold">A</div>
+                <div>
+                    <p class="font-semibold text-sm">Admin</p>
+                    <p class="text-xs text-gray-500" id="userEmailDisplay">admin@trustfix.shop</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="mt-3 w-full text-left text-sm text-red-500 hover:text-red-700 font-medium">Logout</button>
         </div>
-        <div id="repairsList"></div>
-    </div>
+    </aside>
 
-    <!-- CANCELLED TAB -->
-    <div id="tab-cancelled" class="tab-content">
-        <div class="filter-bar">
-            <input class="search-box" id="cancelledSearch" placeholder="🔍 Search by ID, customer name..." oninput="filterCancelled()">
-            <button class="refresh-btn" onclick="loadAllData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+    <!-- MAIN CONTENT -->
+    <main class="md:ml-64 p-4 md:p-8 pb-24 md:pb-8 min-h-screen">
+
+        <!-- TOP BAR -->
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-8">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800" id="pageTitle">📊 Dashboard</h2>
+                <p class="text-sm text-gray-500" id="pageSub">Orders from all your websites</p>
+            </div>
+            <div class="flex items-center gap-4 flex-wrap">
+                <button onclick="loadOrders()" class="refresh-btn" id="refreshBtn">
+                    <span class="material-symbols-outlined text-[20px]">refresh</span> Refresh
+                </button>
+                <span class="material-symbols-outlined text-gray-500 cursor-pointer hover:text-gray-700" onclick="logout()">logout</span>
+            </div>
         </div>
-        <div id="cancelledList"></div>
+
+        <!-- ===== DASHBOARD ===== -->
+        <div id="page-dashboard">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8" id="statsContainer">
+                <div class="stat-card"><p class="text-sm text-gray-500">📦 Total Orders</p><p class="text-2xl font-bold text-gray-800" id="totalOrders">0</p></div>
+                <div class="stat-card"><p class="text-sm text-gray-500">⏳ Pending</p><p class="text-2xl font-bold text-amber-600" id="pendingOrders">0</p></div>
+                <div class="stat-card"><p class="text-sm text-gray-500">💰 Revenue</p><p class="text-2xl font-bold text-green-600" id="totalRevenue">₹0</p></div>
+                <div class="stat-card"><p class="text-sm text-gray-500">📅 Today</p><p class="text-2xl font-bold text-blue-600" id="todayOrders">0</p></div>
+                <div class="stat-card"><p class="text-sm text-gray-500">🌐 Sites</p><p class="text-2xl font-bold text-purple-600" id="siteCount">0</p></div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-lg">🕐 Recent Orders</h3>
+                    <button onclick="showPage('orders')" class="text-sm text-blue-600 hover:text-blue-800">View All →</button>
+                </div>
+                <div id="recentOrdersList"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+            </div>
+        </div>
+
+        <!-- ===== ORDERS ===== -->
+        <div id="page-orders" style="display:none;">
+            <div class="flex flex-col md:flex-row gap-4 mb-6">
+                <div class="flex-1 relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                    <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search by Name, Phone, Address, Product, ID..." oninput="filterOrders()">
+                </div>
+                <div class="flex gap-2 overflow-x-auto pb-1 flex-wrap">
+                    <button class="btn btn-primary" onclick="filterByStatus('all')">All</button>
+                    <button class="btn btn-outline" onclick="filterByStatus('Pending')">Pending</button>
+                    <button class="btn btn-outline" onclick="filterByStatus('Confirmed')">Confirmed</button>
+                    <button class="btn btn-outline" onclick="filterByStatus('Shipped')">Shipped</button>
+                    <button class="btn btn-outline" onclick="filterByStatus('Delivered')">Delivered</button>
+                    <button class="btn btn-outline" onclick="filterByStatus('Completed')">Completed</button>
+                    <button class="btn btn-outline" onclick="filterByStatus('Cancelled')">Cancelled</button>
+                </div>
+            </div>
+            <!-- ===== NEW: Website Filter ===== -->
+            <div class="flex flex-wrap gap-2 mb-4">
+                <span class="text-xs text-gray-500 font-semibold mr-2">🌐 Filter by Website:</span>
+                <button class="website-filter-btn active" onclick="filterByWebsite('all', this)">All Sites</button>
+                <button class="website-filter-btn" onclick="filterByWebsite('DS Zone', this)">DS Zone</button>
+                <button class="website-filter-btn" onclick="filterByWebsite('Trust Fix', this)">Trust Fix</button>
+                <button class="website-filter-btn" onclick="filterByWebsite('Other', this)">Other</button>
+            </div>
+            <div id="ordersList"><div class="loading"><div class="spinner"></div>Loading orders...</div></div>
+        </div>
+
+        <!-- ===== REPAIRS ===== -->
+        <div id="page-repairs" style="display:none;">
+            <div class="bg-white rounded-2xl p-6 shadow-sm">
+                <h3 class="font-semibold text-lg mb-4">🔧 Repair Bookings</h3>
+                <div id="repairsList"><div class="loading"><div class="spinner"></div>Loading repairs...</div></div>
+            </div>
+        </div>
+
+        <!-- ===== CUSTOMERS ===== -->
+        <div id="page-customers" style="display:none;">
+            <div class="bg-white rounded-2xl p-6 shadow-sm">
+                <h3 class="font-semibold text-lg mb-4">👥 Customers</h3>
+                <div class="relative mb-4">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                    <input type="text" id="customerSearchInput" class="search-box" placeholder="🔍 Search customer by name, phone, email..." oninput="filterCustomers()">
+                </div>
+                <div id="customersList"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+            </div>
+        </div>
+
+        <!-- ===== ACTIVITY ===== -->
+        <div id="page-activity" style="display:none;">
+            <div class="bg-white rounded-2xl p-6 shadow-sm">
+                <h3 class="font-semibold text-lg mb-4">🔔 Activity</h3>
+                <div id="activityList"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MOBILE NAV -->
+    <nav class="mobile-nav">
+        <a href="#" class="active" onclick="showPage('dashboard')">
+            <span class="material-symbols-outlined">dashboard</span> Home
+        </a>
+        <a href="#" onclick="showPage('orders')">
+            <span class="material-symbols-outlined">shopping_bag</span> Orders
+        </a>
+        <a href="#" onclick="showPage('repairs')">
+            <span class="material-symbols-outlined">build</span> Repairs
+        </a>
+        <a href="#" onclick="showPage('customers')">
+            <span class="material-symbols-outlined">people</span> Customers
+        </a>
+    </nav>
+</div>
+
+<!-- ========== ORDER DETAIL MODAL ========== -->
+<div id="orderDetailModal" class="order-detail-modal">
+    <div class="order-detail-content">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold" id="modalCustomerName">Customer Orders</h3>
+            <button onclick="closeOrderDetail()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        </div>
+        <div id="modalOrderList"></div>
     </div>
 </div>
 
-<!-- ===== EDIT MODAL ===== -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="closeEditModal()">&times;</span>
-        <h3 id="editModalTitle">Edit Order</h3>
-        <input type="hidden" id="editDocId">
-        <input type="hidden" id="editType">
-        <label>Status</label>
-        <select id="editStatus">
-            <option value="Pending">Pending</option>
-            <option value="Shipped">Shipped</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
-        </select>
-        <label>Customer Name</label>
-        <input type="text" id="editName">
-        <label>Customer Phone</label>
-        <input type="text" id="editPhone">
-        <label>Customer Address</label>
-        <textarea id="editAddress" rows="2"></textarea>
-        <label>Notes (Optional)</label>
-        <textarea id="editNotes" rows="2" placeholder="Add notes here..."></textarea>
-        <div class="modal-buttons">
-            <button class="save-btn" onclick="saveEdit()"><i class="fas fa-save"></i> Save Changes</button>
-            <button class="cancel-btn" onclick="closeEditModal()">Cancel</button>
-        </div>
-    </div>
-</div>
+<!-- TOAST -->
+<div id="toast" class="toast" style="display:none;"></div>
 
-<!-- ===== TOAST ===== -->
-<div id="toast" class="toast"></div>
-
-<!-- ================================================== -->
-<!-- ==================== JAVASCRIPT ==================== -->
-<!-- ================================================== -->
 <script>
-    // ==================== FIREBASE CONFIG ====================
+    // ==================== FIREBASE ====================
     const firebaseConfig = {
         apiKey: "AIzaSyBUqsrDawGJbX-wgcBFRU4vuaasjt5ZnKQ",
         authDomain: "discountzone-da33a.firebaseapp.com",
@@ -259,424 +300,804 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    emailjs.init("EE236Vmj4RMCjX1Dq");
-
+    
     const ADMIN_EMAIL = "abhishekbainsla363@gmail.com";
     let allOrders = [];
     let allRepairs = [];
-    let currentUser = null;
-
+    let currentFilter = 'all';
+    let currentSearch = '';
+    let currentWebsiteFilter = 'all';
+    let currentCustomerSearch = '';
+    
+    // ==================== WEBSITE DETECTION ====================
+    function detectWebsite(order) {
+        // Check if website field exists in order data
+        if (order.website) {
+            return order.website;
+        }
+        
+        // Check by order ID pattern
+        if (order.orderId) {
+            if (order.orderId.startsWith('DS') || order.orderId.includes('DS')) {
+                return 'DS Zone';
+            }
+            if (order.orderId.startsWith('TF') || order.orderId.includes('TF')) {
+                return 'Trust Fix';
+            }
+        }
+        
+        // Check by customer email domain (if available)
+        if (order.customerEmail) {
+            if (order.customerEmail.includes('dszone') || order.customerEmail.includes('ds-zone')) {
+                return 'DS Zone';
+            }
+            if (order.customerEmail.includes('trustfix')) {
+                return 'Trust Fix';
+            }
+        }
+        
+        // Check by items (if product names contain website references)
+        if (order.items && typeof order.items === 'string') {
+            const itemsLower = order.items.toLowerCase();
+            if (itemsLower.includes('ds zone') || itemsLower.includes('dszone')) {
+                return 'DS Zone';
+            }
+            if (itemsLower.includes('trust fix') || itemsLower.includes('trustfix')) {
+                return 'Trust Fix';
+            }
+        }
+        
+        return 'Other';
+    }
+    
     // ==================== AUTH ====================
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            currentUser = user;
-            document.getElementById('adminEmail').textContent = user.email;
-            if (user.email !== ADMIN_EMAIL) {
-                showToast("❌ You are not authorized as Admin!", "error");
-                setTimeout(() => { logout(); }, 2000);
+    async function loginWithGoogle() {
+        try {
+            const result = await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+            if(result.user.email !== ADMIN_EMAIL) {
+                await auth.signOut();
+                document.getElementById('loginError').innerText = "❌ Unauthorized! Only admin can access.";
+                document.getElementById('loginError').style.display = 'block';
                 return;
             }
-            loadAllData();
-            // Real-time listener
-            db.collection("orders").onSnapshot(() => { loadAllData(); });
-            db.collection("repairs").onSnapshot(() => { loadAllData(); });
-        } else {
-            // Redirect to login
-            window.location.href = "admin-login.html";
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboardScreen').style.display = 'block';
+            document.getElementById('userEmailDisplay').innerText = result.user.email;
+            loadOrders();
+            loadRepairs();
+            if (Notification.permission === "default") Notification.requestPermission();
+        } catch(e) {
+            document.getElementById('loginError').innerText = "❌ " + e.message;
+            document.getElementById('loginError').style.display = 'block';
+        }
+    }
+    
+    auth.onAuthStateChanged(user => {
+        if(user && user.email === ADMIN_EMAIL) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboardScreen').style.display = 'block';
+            document.getElementById('userEmailDisplay').innerText = user.email;
+            loadOrders();
+            loadRepairs();
         }
     });
-
+    
     function logout() {
         auth.signOut();
-        window.location.href = "admin-login.html";
+        document.getElementById('dashboardScreen').style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'flex';
+        showToast("Logged out");
     }
-
-    // ==================== LOAD DATA ====================
-    async function loadAllData() {
-        showToast("🔄 Loading data...", "info");
+    
+    // ==================== NOTIFICATION ====================
+    function sendNotification(order) {
+        const website = detectWebsite(order);
+        if (Notification.permission === "granted") {
+            new Notification(`🛒 New Order from ${website}!`, {
+                body: `Customer: ${order.customerName || order.name}\nTotal: ₹${order.total || 'N/A'}\nOTP: ${order.deliveryOTP || 'N/A'}`,
+                icon: "https://i.imgur.com/8FkqJpR.jpg"
+            });
+        }
+        showToast(`🔔 New order from ${website} | ${order.customerName || order.name} | OTP: ${order.deliveryOTP || 'N/A'}`);
         try {
-            // Load Orders
-            const ordersSnap = await db.collection("orders").orderBy("date", "desc").get();
-            allOrders = [];
-            ordersSnap.forEach(doc => {
+            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
+            audio.play();
+        } catch(e) {}
+    }
+    
+    // ==================== LOAD ORDERS ====================
+    function loadOrders() {
+        db.collection('orders').orderBy('date', 'desc').onSnapshot((snapshot) => {
+            let orders = [];
+            snapshot.forEach(doc => {
                 let data = doc.data();
                 data.docId = doc.id;
-                allOrders.push(data);
+                data.isRepair = false;
+                data.website = detectWebsite(data); // Auto-detect website
+                orders.push(data);
             });
-
-            // Load Repairs
-            const repairsSnap = await db.collection("repairs").orderBy("date", "desc").get();
-            allRepairs = [];
-            repairsSnap.forEach(doc => {
+            
+            if(allOrders.length > 0 && orders.length > allOrders.length) {
+                const newOrder = orders[0];
+                if(newOrder) sendNotification(newOrder);
+            }
+            
+            allOrders = orders;
+            updateAllUI();
+        }, (error) => {
+            console.log("Orders error:", error);
+        });
+    }
+    
+    // ==================== LOAD REPAIRS ====================
+    function loadRepairs() {
+        db.collection('repairs').orderBy('date', 'desc').onSnapshot((snapshot) => {
+            let repairs = [];
+            snapshot.forEach(doc => {
                 let data = doc.data();
                 data.docId = doc.id;
-                allRepairs.push(data);
+                data.isRepair = true;
+                data.website = detectWebsite(data); // Auto-detect website
+                repairs.push(data);
             });
-
-            updateStats();
-            renderOrders();
-            renderRepairs();
-            renderCancelled();
-            showToast("✅ Data loaded successfully!", "success");
-        } catch (error) {
-            showToast("❌ Error loading data: " + error.message, "error");
+            allRepairs = repairs;
+            updateAllUI();
+        }, (error) => {
+            console.log("Repairs error:", error);
+        });
+    }
+    
+    // ==================== UPDATE STATUS ====================
+    async function updateStatus(docId, type, newStatus) {
+        try {
+            if(type === 'order') {
+                await db.collection('orders').doc(docId).update({ status: newStatus });
+            } else {
+                await db.collection('repairs').doc(docId).update({ status: newStatus });
+            }
+            showToast("✅ Status updated to " + newStatus);
+        } catch(e) {
+            showToast("❌ Error: " + e.message);
         }
     }
-
-    // ==================== UPDATE STATS ====================
+    
+    // ==================== CONFIRM ORDER ====================
+    async function confirmOrder(docId, type) {
+        try {
+            if(type === 'order') {
+                await db.collection('orders').doc(docId).update({ status: 'Confirmed' });
+            } else {
+                await db.collection('repairs').doc(docId).update({ status: 'Confirmed' });
+            }
+            showToast("✅ Order Confirmed!");
+        } catch(e) {
+            showToast("❌ Error: " + e.message);
+        }
+    }
+    
+    // ==================== DELIVERED ORDER ====================
+    async function deliveredOrder(docId, type) {
+        try {
+            if(type === 'order') {
+                await db.collection('orders').doc(docId).update({ status: 'Delivered' });
+            } else {
+                await db.collection('repairs').doc(docId).update({ status: 'Delivered' });
+            }
+            showToast("✅ Order Marked as Delivered!");
+        } catch(e) {
+            showToast("❌ Error: " + e.message);
+        }
+    }
+    
+    // ==================== CANCEL ORDER (Admin) ====================
+    async function adminCancelOrder(docId, type) {
+        if(!confirm("Are you sure you want to cancel this order?")) return;
+        try {
+            const cancelReason = prompt("Reason for cancellation (optional):");
+            const data = {
+                status: "Cancelled",
+                cancelledBy: "Admin",
+                cancelledAt: new Date().toISOString(),
+                cancelReason: cancelReason || "Cancelled by Admin"
+            };
+            
+            if(type === 'order') {
+                await db.collection('orders').doc(docId).update(data);
+            } else {
+                await db.collection('repairs').doc(docId).update(data);
+            }
+            showToast("✅ Order cancelled by Admin");
+        } catch(e) {
+            showToast("❌ Error: " + e.message);
+        }
+    }
+    
+    // ==================== DELETE ORDER ====================
+    async function deleteOrder(docId, type) {
+        if(!confirm("Are you sure you want to permanently delete this order?")) return;
+        try {
+            if(type === 'order') {
+                await db.collection('orders').doc(docId).delete();
+            } else {
+                await db.collection('repairs').doc(docId).delete();
+            }
+            showToast("🗑️ Order deleted permanently");
+        } catch(e) {
+            showToast("❌ Error: " + e.message);
+        }
+    }
+    
+    // ==================== UPDATE ALL UI ====================
+    function updateAllUI() {
+        updateStats();
+        renderOrders(allOrders.slice(0, 5), 'recentOrdersList');
+        renderOrders(allOrders, 'ordersList');
+        renderRepairs(allRepairs, 'repairsList');
+        updateCustomers();
+        updateActivity();
+        applyFilters();
+    }
+    
+    // ==================== STATS ====================
     function updateStats() {
-        const total = allOrders.length;
-        const pending = allOrders.filter(o => o.status === 'Pending').length;
-        const shipped = allOrders.filter(o => o.status === 'Shipped').length;
-        const completed = allOrders.filter(o => o.status === 'Completed').length;
-        const cancelled = allOrders.filter(o => o.status === 'Cancelled').length;
-        const repairs = allRepairs.length;
-
+        const total = allOrders.length + allRepairs.length;
+        const pending = allOrders.filter(o => o.status === 'Pending' || o.status === 'Shipped').length + allRepairs.filter(r => r.status === 'Pending' || r.status === 'In Progress').length;
+        const revenue = allOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+        const today = allOrders.filter(o => {
+            if (!o.date) return false;
+            return o.date.startsWith(new Date().toISOString().split('T')[0]);
+        }).length;
+        
+        // Count unique websites
+        const websites = new Set();
+        allOrders.forEach(o => { if (o.website) websites.add(o.website); });
+        allRepairs.forEach(r => { if (r.website) websites.add(r.website); });
+        
         document.getElementById('totalOrders').textContent = total;
         document.getElementById('pendingOrders').textContent = pending;
-        document.getElementById('shippedOrders').textContent = shipped;
-        document.getElementById('completedOrders').textContent = completed;
-        document.getElementById('cancelledOrders').textContent = cancelled;
-        document.getElementById('repairRequests').textContent = repairs;
-
-        document.getElementById('ordersCount').textContent = total;
-        document.getElementById('repairsCount').textContent = repairs;
-        document.getElementById('cancelledCount').textContent = cancelled;
+        document.getElementById('totalRevenue').textContent = '₹' + revenue.toFixed(0);
+        document.getElementById('todayOrders').textContent = today;
+        document.getElementById('siteCount').textContent = websites.size || 0;
     }
-
+    
+    // ==================== GET STATUS BADGE ====================
+    function getStatusBadge(status) {
+        const statusMap = {
+            'Pending': 'status-pending',
+            'Confirmed': 'status-confirmed',
+            'Shipped': 'status-shipped',
+            'Delivered': 'status-delivered',
+            'Completed': 'status-completed',
+            'Cancelled': 'status-cancelled'
+        };
+        return statusMap[status] || 'status-pending';
+    }
+    
+    // ==================== GET SOURCE BADGE ====================
+    function getSourceBadge(website) {
+        if (!website) return '<span class="source-badge source-other">🌐 Other</span>';
+        if (website === 'DS Zone') return '<span class="source-badge source-dszone">🔵 DS Zone</span>';
+        if (website === 'Trust Fix') return '<span class="source-badge source-trustfix">🟡 Trust Fix</span>';
+        return `<span class="source-badge source-other">🌐 ${website}</span>`;
+    }
+    
+    // ==================== FORMAT ITEMS PROPERLY ====================
+    function formatItems(items) {
+        if (!items) return '<div style="color:#94a3b8; font-size:13px;">No items</div>';
+        
+        if (typeof items === 'string') {
+            const lines = items.split('\n').filter(line => line.trim());
+            if (lines.length === 0) {
+                return `<div style="color:#64748b; font-size:13px;">${items}</div>`;
+            }
+            
+            let html = '<div class="items-box">';
+            lines.forEach(line => {
+                let cleanLine = line.replace(/^-\s*/, '').trim();
+                if (cleanLine) {
+                    let priceMatch = cleanLine.match(/₹(\d+)/);
+                    let priceDisplay = priceMatch ? `₹${priceMatch[1]}` : '';
+                    let nameDisplay = cleanLine.replace(/₹\d+(\s*x\s*\d+)?/, '').trim();
+                    
+                    html += `<div class="item-row">
+                        <span class="item-name">🛒 ${nameDisplay}</span>
+                        <span class="item-price">${priceDisplay}</span>
+                    </div>`;
+                }
+            });
+            html += '</div>';
+            return html;
+        }
+        
+        return `<div style="color:#64748b; font-size:13px;">${JSON.stringify(items)}</div>`;
+    }
+    
     // ==================== RENDER ORDERS ====================
-    function renderOrders() {
-        const container = document.getElementById('ordersList');
-        const search = document.getElementById('orderSearch').value.toLowerCase();
-        const statusFilter = document.getElementById('orderStatusFilter').value;
-
-        let filtered = allOrders.filter(o => {
-            if (o.status === 'Cancelled') return false;
-            if (statusFilter !== 'all' && o.status !== statusFilter) return false;
-            if (search) {
-                const searchable = (o.orderId || '') + (o.customerName || '') + (o.customerPhone || '');
-                return searchable.toLowerCase().includes(search);
-            }
-            return true;
-        });
-
-        if (filtered.length === 0) {
-            container.innerHTML = `<div class="empty-state"><span class="icon">📭</span><p>No orders found</p></div>`;
+    function renderOrders(orderList, containerId, limit = 0) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        let list = orderList || [];
+        if (limit > 0) list = list.slice(0, limit);
+        
+        if (list.length === 0) {
+            container.innerHTML = `<div class="text-center py-8 text-gray-400">😴 No orders yet</div>`;
             return;
         }
-
-        container.innerHTML = filtered.map(order => `
-            <div class="order-card">
-                <div class="order-header">
-                    <div>
-                        <span class="order-id">🛒 ${order.orderId || 'N/A'}</span>
-                        <span class="order-otp">🔑 OTP: ${order.deliveryOTP || 'N/A'}</span>
-                        <span class="status-badge status-${(order.status || 'pending').toLowerCase()}">${order.status || 'Pending'}</span>
+        
+        container.innerHTML = list.map(o => {
+            const statusClass = getStatusBadge(o.status);
+            const statusLabel = o.status || 'Pending';
+            const website = o.website || detectWebsite(o);
+            const sourceBadge = getSourceBadge(website);
+            
+            let cancelHtml = '';
+            if(o.cancelledBy) {
+                const icon = o.cancelledBy === 'Admin' ? '👑' : '👤';
+                const label = o.cancelledBy === 'Admin' ? 'Admin' : 'Customer';
+                cancelHtml = `
+                    <div class="cancel-reason">
+                        <strong>❌ Cancelled by ${icon} ${label}</strong>
+                        <div>Reason: ${o.cancelReason || 'N/A'}</div>
+                        <div class="cancel-by">${new Date(o.cancelledAt).toLocaleString()}</div>
                     </div>
-                    <span class="order-date">📅 ${order.date ? new Date(order.date).toLocaleString() : 'N/A'}</span>
-                </div>
-                <div class="customer-name">👤 ${order.customerName || 'N/A'}</div>
-                <div class="customer-phone">📞 ${order.customerPhone || 'N/A'}</div>
-                <div class="customer-address">📍 ${order.customerAddress || 'Address not provided'}</div>
-                <div class="order-items"><strong>📦 Items:</strong> ${order.items || 'No items'}</div>
-                <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;">
-                    <span class="order-total">💰 Total: ₹${order.total || '0'}</span>
-                    <span class="order-payment">💳 ${order.paymentMethod || 'N/A'}</span>
-                </div>
-                <div class="action-buttons">
-                    ${order.status === 'Pending' ? `<button class="action-btn ship" onclick="updateOrderStatus('${order.docId}', 'Shipped')">🚚 Ship</button>` : ''}
-                    ${order.status === 'Shipped' ? `<button class="action-btn complete" onclick="updateOrderStatus('${order.docId}', 'Completed')">✅ Complete</button>` : ''}
-                    ${order.status !== 'Cancelled' && order.status !== 'Completed' ? `<button class="action-btn cancel" onclick="updateOrderStatus('${order.docId}', 'Cancelled')">❌ Cancel</button>` : ''}
-                    <button class="action-btn" style="background:#1a237e;color:white;" onclick="openEditModal('order', '${order.docId}')"><i class="fas fa-edit"></i> Edit</button>
-                    <button class="action-btn delete" onclick="deleteOrder('${order.docId}')"><i class="fas fa-trash"></i> Delete</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // ==================== RENDER REPAIRS ====================
-    function renderRepairs() {
-        const container = document.getElementById('repairsList');
-        const search = document.getElementById('repairSearch').value.toLowerCase();
-        const statusFilter = document.getElementById('repairStatusFilter').value;
-
-        let filtered = allRepairs.filter(r => {
-            if (r.status === 'Cancelled') return false;
-            if (statusFilter !== 'all' && r.status !== statusFilter) return false;
-            if (search) {
-                const searchable = (r.repairId || '') + (r.customerName || '') + (r.customerPhone || '');
-                return searchable.toLowerCase().includes(search);
+                `;
             }
-            return true;
-        });
-
-        if (filtered.length === 0) {
-            container.innerHTML = `<div class="empty-state"><span class="icon">🔧</span><p>No repair requests found</p></div>`;
-            return;
-        }
-
-        container.innerHTML = filtered.map(repair => `
-            <div class="repair-card">
-                <div class="repair-header">
-                    <div>
-                        <span class="repair-id">🔧 ${repair.repairId || 'N/A'}</span>
-                        <span class="order-otp">🔑 OTP: ${repair.deliveryOTP || 'N/A'}</span>
-                        <span class="status-badge status-${(repair.status || 'pending').toLowerCase()}">${repair.status || 'Pending'}</span>
-                    </div>
-                    <span class="order-date">📅 ${repair.date ? new Date(repair.date).toLocaleString() : 'N/A'}</span>
-                </div>
-                <div class="customer-name">👤 ${repair.customerName || 'N/A'}</div>
-                <div class="customer-phone">📞 ${repair.customerPhone || 'N/A'}</div>
-                <div class="customer-address">📍 ${repair.customerAddress || 'Address not provided'}</div>
-                <div style="margin:8px 0;font-size:13px;">
-                    <strong>📱 Device:</strong> ${repair.deviceType || 'N/A'} - ${repair.deviceBrand || 'N/A'} ${repair.deviceModel || 'N/A'}
-                </div>
-                <div style="font-size:13px;color:#555;"><strong>⚠️ Issue:</strong> ${repair.deviceFaults || 'N/A'}</div>
-                <div class="action-buttons">
-                    ${repair.status === 'Pending' ? `<button class="action-btn ship" onclick="updateRepairStatus('${repair.docId}', 'Shipped')">🚚 Ship</button>` : ''}
-                    ${repair.status === 'Shipped' ? `<button class="action-btn complete" onclick="updateRepairStatus('${repair.docId}', 'Completed')">✅ Complete</button>` : ''}
-                    ${repair.status !== 'Cancelled' && repair.status !== 'Completed' ? `<button class="action-btn cancel" onclick="updateRepairStatus('${repair.docId}', 'Cancelled')">❌ Cancel</button>` : ''}
-                    <button class="action-btn" style="background:#1a237e;color:white;" onclick="openEditModal('repair', '${repair.docId}')"><i class="fas fa-edit"></i> Edit</button>
-                    <button class="action-btn delete" onclick="deleteRepair('${repair.docId}')"><i class="fas fa-trash"></i> Delete</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // ==================== RENDER CANCELLED ====================
-    function renderCancelled() {
-        const container = document.getElementById('cancelledList');
-        const search = document.getElementById('cancelledSearch').value.toLowerCase();
-
-        const cancelledOrders = allOrders.filter(o => o.status === 'Cancelled');
-        const cancelledRepairs = allRepairs.filter(r => r.status === 'Cancelled');
-        const allCancelled = [...cancelledOrders, ...cancelledRepairs];
-
-        let filtered = allCancelled.filter(item => {
-            if (search) {
-                const searchable = (item.orderId || item.repairId || '') + (item.customerName || '') + (item.customerPhone || '');
-                return searchable.toLowerCase().includes(search);
-            }
-            return true;
-        });
-
-        if (filtered.length === 0) {
-            container.innerHTML = `<div class="empty-state"><span class="icon">✅</span><p>No cancelled items</p></div>`;
-            return;
-        }
-
-        container.innerHTML = filtered.map(item => {
-            const isOrder = item.orderId ? true : false;
-            const id = isOrder ? item.orderId : item.repairId;
-            const icon = isOrder ? '🛒' : '🔧';
+            
+            const showDeliveredBtn = o.status === 'Shipped';
+            const showConfirmBtn = o.status === 'Pending';
+            
+            const customerName = o.customerName || o.name || 'N/A';
+            const customerPhone = o.customerPhone || o.phone || 'N/A';
+            const customerAddress = o.customerAddress || 'Not provided';
+            const customerEmail = o.customerEmail || 'N/A';
+            
+            const itemsHtml = formatItems(o.items);
+            const borderColor = o.status === 'Pending' ? 'border-amber-500' : 
+                               o.status === 'Confirmed' ? 'border-purple-500' : 
+                               o.status === 'Shipped' ? 'border-indigo-500' : 
+                               o.status === 'Delivered' ? 'border-cyan-500' : 
+                               o.status === 'Completed' ? 'border-green-500' : 
+                               o.status === 'Cancelled' ? 'border-gray-400' : 'border-red-500';
             
             return `
-                <div class="order-card" style="border-left-color:#e74c3c;">
-                    <div class="order-header">
-                        <div>
-                            <span class="order-id">${icon} ${id || 'N/A'}</span>
-                            <span class="status-badge status-cancelled">❌ Cancelled</span>
-                            ${item.cancelReason ? `<span style="font-size:11px;color:#e74c3c;margin-left:8px;">Reason: ${item.cancelReason}</span>` : ''}
+                <div class="order-card border-l-4 ${borderColor}">
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 flex-wrap mb-2">
+                                <span class="text-xs font-bold text-gray-400">${o.orderId || 'ORD-' + o.docId}</span>
+                                ${sourceBadge}
+                                <span class="status-badge ${statusClass}">${statusLabel}</span>
+                                ${o.deliveryOTP ? `<span class="otp-display">🔑 ${o.deliveryOTP}</span>` : ''}
+                                ${o.cancelledBy ? (o.cancelledBy === 'Admin' ? '<span class="badge badge-urgent">Cancelled by Admin</span>' : '<span class="badge badge-pending">Cancelled by Customer</span>') : ''}
+                            </div>
+                            
+                            <!-- CUSTOMER DETAILS -->
+                            <div class="customer-details-box">
+                                <div class="detail-grid">
+                                    <div><strong>👤 Name:</strong> ${customerName}</div>
+                                    <div><strong>📞 Phone:</strong> ${customerPhone}</div>
+                                    <div class="full-width"><strong>📍 Address:</strong> ${customerAddress}</div>
+                                    ${customerEmail !== 'N/A' ? `<div class="full-width"><strong>📧 Email:</strong> ${customerEmail}</div>` : ''}
+                                </div>
+                            </div>
+                            
+                            <!-- ORDER ITEMS -->
+                            <div style="margin:8px 0;">
+                                <div style="font-weight:600; font-size:13px; color:#1e293b; margin-bottom:4px;">📦 Order Items:</div>
+                                ${itemsHtml}
+                            </div>
+                            
+                            ${cancelHtml}
+                            <div class="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+                                <span><span class="material-symbols-outlined text-[16px] align-middle">calendar_today</span> ${new Date(o.date).toLocaleString()}</span>
+                                <span class="font-bold text-green-600 text-base">₹${o.total || '0'}</span>
+                                <span>💳 ${o.paymentMethod || 'N/A'}</span>
+                            </div>
                         </div>
-                        <span class="order-date">📅 ${item.date ? new Date(item.date).toLocaleString() : 'N/A'}</span>
-                    </div>
-                    <div class="customer-name">👤 ${item.customerName || 'N/A'}</div>
-                    <div class="customer-phone">📞 ${item.customerPhone || 'N/A'}</div>
-                    <div class="customer-address">📍 ${item.customerAddress || 'Address not provided'}</div>
-                    ${isOrder ? `
-                        <div class="order-items"><strong>📦 Items:</strong> ${item.items || 'No items'}</div>
-                        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;">
-                            <span class="order-total">💰 Total: ₹${item.total || '0'}</span>
-                            <span class="order-payment">💳 ${item.paymentMethod || 'N/A'}</span>
+                        <div class="flex flex-wrap gap-2 mt-2 md:mt-0">
+                            <select id="status-${o.docId}" class="border border-gray-300 rounded-lg px-2 py-1 text-sm">
+                                <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="Confirmed" ${o.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                                <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                                <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="Completed" ${o.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                                <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                            <button onclick="updateStatusFromSelect('${o.docId}', 'order')" class="btn btn-success text-xs">Update</button>
+                            ${showConfirmBtn ? `<button onclick="confirmOrder('${o.docId}', 'order')" class="btn btn-confirm text-xs">Confirm</button>` : ''}
+                            ${showDeliveredBtn ? `<button onclick="deliveredOrder('${o.docId}', 'order')" class="btn-delivered btn text-xs">Delivered</button>` : ''}
+                            <button onclick="adminCancelOrder('${o.docId}', 'order')" class="btn btn-warning text-xs">Cancel</button>
+                            <button onclick="deleteOrder('${o.docId}', 'order')" class="btn btn-danger text-xs">Delete</button>
                         </div>
-                    ` : `
-                        <div style="margin:8px 0;font-size:13px;">
-                            <strong>📱 Device:</strong> ${item.deviceType || 'N/A'} - ${item.deviceBrand || 'N/A'} ${item.deviceModel || 'N/A'}
-                        </div>
-                        <div style="font-size:13px;color:#555;"><strong>⚠️ Issue:</strong> ${item.deviceFaults || 'N/A'}</div>
-                    `}
-                    <div style="font-size:12px;color:#999;margin-top:4px;">
-                        ${item.cancelledBy ? `Cancelled by: ${item.cancelledBy}` : ''}
-                        ${item.cancelledAt ? ` at ${new Date(item.cancelledAt).toLocaleString()}` : ''}
-                    </div>
-                    <div class="action-buttons">
-                        <button class="action-btn delete" onclick="${isOrder ? `deleteOrder('${item.docId}')` : `deleteRepair('${item.docId}')`}"><i class="fas fa-trash"></i> Delete</button>
                     </div>
                 </div>
             `;
         }).join('');
     }
-
-    // ==================== FILTER FUNCTIONS ====================
-    function filterOrders() { renderOrders(); }
-    function filterRepairs() { renderRepairs(); }
-    function filterCancelled() { renderCancelled(); }
-
-    // ==================== UPDATE STATUS ====================
-    async function updateOrderStatus(docId, status) {
-        try {
-            await db.collection("orders").doc(docId).update({ status: status });
-            showToast(`✅ Order status updated to ${status}`, "success");
-            
-            // Send email notification
-            const order = allOrders.find(o => o.docId === docId);
-            if (order) {
-                const templateParams = {
-                    to_email: ADMIN_EMAIL,
-                    customer_name: order.customerName || "Customer",
-                    customer_phone: order.customerPhone || "N/A",
-                    customer_address: order.customerAddress || "N/A",
-                    order_items: order.items || "Order items",
-                    order_total: `₹${order.total || '0'}`,
-                    payment_method: order.paymentMethod || "N/A",
-                    order_date: new Date().toLocaleString(),
-                    order_type: "Order Status Update",
-                    action_type: `STATUS: ${status}`,
-                    delivery_otp: order.deliveryOTP || "N/A"
-                };
-                await emailjs.send("service_gbou2dl", "template_lp2zf4b", templateParams);
-            }
-            loadAllData();
-        } catch (error) {
-            showToast("❌ Error: " + error.message, "error");
-        }
+    
+    function updateStatusFromSelect(docId, type) {
+        const newStatus = document.getElementById(`status-${docId}`).value;
+        updateStatus(docId, type, newStatus);
     }
-
-    async function updateRepairStatus(docId, status) {
-        try {
-            await db.collection("repairs").doc(docId).update({ status: status });
-            showToast(`✅ Repair status updated to ${status}`, "success");
-            loadAllData();
-        } catch (error) {
-            showToast("❌ Error: " + error.message, "error");
-        }
-    }
-
-    // ==================== DELETE ====================
-    async function deleteOrder(docId) {
-        if (!confirm("⚠️ Are you sure you want to delete this order permanently?")) return;
-        try {
-            await db.collection("orders").doc(docId).delete();
-            showToast("🗑️ Order deleted successfully", "success");
-            loadAllData();
-        } catch (error) {
-            showToast("❌ Error: " + error.message, "error");
-        }
-    }
-
-    async function deleteRepair(docId) {
-        if (!confirm("⚠️ Are you sure you want to delete this repair permanently?")) return;
-        try {
-            await db.collection("repairs").doc(docId).delete();
-            showToast("🗑️ Repair deleted successfully", "success");
-            loadAllData();
-        } catch (error) {
-            showToast("❌ Error: " + error.message, "error");
-        }
-    }
-
-    // ==================== EDIT MODAL ====================
-    let editDocId = null;
-    let editType = null;
-
-    function openEditModal(type, docId) {
-        editDocId = docId;
-        editType = type;
-        const data = type === 'order' ? allOrders.find(o => o.docId === docId) : allRepairs.find(r => r.docId === docId);
+    
+    // ==================== RENDER REPAIRS ====================
+    function renderRepairs(repairList, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
         
-        if (!data) return;
-
-        document.getElementById('editDocId').value = docId;
-        document.getElementById('editType').value = type;
-        document.getElementById('editModalTitle').textContent = type === 'order' ? '✏️ Edit Order' : '✏️ Edit Repair';
-        document.getElementById('editStatus').value = data.status || 'Pending';
-        document.getElementById('editName').value = data.customerName || '';
-        document.getElementById('editPhone').value = data.customerPhone || '';
-        document.getElementById('editAddress').value = data.customerAddress || '';
-        document.getElementById('editNotes').value = data.notes || '';
-        
-        document.getElementById('editModal').style.display = 'flex';
-    }
-
-    function closeEditModal() {
-        document.getElementById('editModal').style.display = 'none';
-        editDocId = null;
-        editType = null;
-    }
-
-    async function saveEdit() {
-        const docId = document.getElementById('editDocId').value;
-        const type = document.getElementById('editType').value;
-        const status = document.getElementById('editStatus').value;
-        const name = document.getElementById('editName').value.trim();
-        const phone = document.getElementById('editPhone').value.trim();
-        const address = document.getElementById('editAddress').value.trim();
-        const notes = document.getElementById('editNotes').value.trim();
-
-        if (!name || !phone || !address) {
-            showToast("⚠️ Please fill all required fields", "error");
+        if (repairList.length === 0) {
+            container.innerHTML = `<div class="text-center py-8 text-gray-400">🔧 No repair bookings yet</div>`;
             return;
         }
-
-        try {
-            const updateData = {
-                status: status,
-                customerName: name,
-                customerPhone: phone,
-                customerAddress: address,
-                notes: notes,
-                updatedAt: new Date().toISOString()
-            };
-
-            if (type === 'order') {
-                await db.collection("orders").doc(docId).update(updateData);
-            } else {
-                await db.collection("repairs").doc(docId).update(updateData);
+        
+        container.innerHTML = repairList.map(r => {
+            const statusClass = getStatusBadge(r.status);
+            const website = r.website || detectWebsite(r);
+            const sourceBadge = getSourceBadge(website);
+            
+            let cancelHtml = '';
+            if(r.cancelledBy) {
+                const icon = r.cancelledBy === 'Admin' ? '👑' : '👤';
+                const label = r.cancelledBy === 'Admin' ? 'Admin' : 'Customer';
+                cancelHtml = `
+                    <div class="cancel-reason">
+                        <strong>❌ Cancelled by ${icon} ${label}</strong>
+                        <div>Reason: ${r.cancelReason || 'N/A'}</div>
+                        <div class="cancel-by">${new Date(r.cancelledAt).toLocaleString()}</div>
+                    </div>
+                `;
             }
-
-            showToast("✅ Updated successfully!", "success");
-            closeEditModal();
-            loadAllData();
-        } catch (error) {
-            showToast("❌ Error: " + error.message, "error");
+            
+            const showDeliveredBtn = r.status === 'Shipped';
+            const showConfirmBtn = r.status === 'Pending';
+            
+            const customerName = r.customerName || 'N/A';
+            const customerPhone = r.customerPhone || 'N/A';
+            const customerAddress = r.customerAddress || 'Not provided';
+            const customerEmail = r.customerEmail || 'N/A';
+            
+            const borderColor = r.status === 'Pending' ? 'border-amber-500' : 
+                               r.status === 'Confirmed' ? 'border-purple-500' : 
+                               r.status === 'Shipped' ? 'border-indigo-500' : 
+                               r.status === 'Delivered' ? 'border-cyan-500' : 
+                               r.status === 'Completed' ? 'border-green-500' : 'border-gray-400';
+            
+            return `
+                <div class="order-card border-l-4 ${borderColor}">
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 flex-wrap mb-2">
+                                <span class="text-xs font-bold text-gray-400">${r.repairId || 'REP-' + r.docId}</span>
+                                ${sourceBadge}
+                                <span class="status-badge ${statusClass}">${r.status || 'Pending'}</span>
+                                ${r.deliveryOTP ? `<span class="otp-display">🔑 ${r.deliveryOTP}</span>` : ''}
+                                ${r.cancelledBy ? (r.cancelledBy === 'Admin' ? '<span class="badge badge-urgent">Cancelled by Admin</span>' : '<span class="badge badge-pending">Cancelled by Customer</span>') : ''}
+                            </div>
+                            
+                            <!-- CUSTOMER DETAILS -->
+                            <div class="customer-details-box">
+                                <div class="detail-grid">
+                                    <div><strong>👤 Name:</strong> ${customerName}</div>
+                                    <div><strong>📞 Phone:</strong> ${customerPhone}</div>
+                                    <div class="full-width"><strong>📍 Address:</strong> ${customerAddress}</div>
+                                    ${customerEmail !== 'N/A' ? `<div class="full-width"><strong>📧 Email:</strong> ${customerEmail}</div>` : ''}
+                                </div>
+                            </div>
+                            
+                            <p class="text-sm text-gray-600"><strong>Device:</strong> ${r.deviceType || ''} ${r.deviceBrand || ''} ${r.deviceModel || ''}</p>
+                            <p class="text-sm text-gray-600"><strong>Issue:</strong> ${r.deviceFaults || 'Not specified'}</p>
+                            ${cancelHtml}
+                            <div class="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+                                <span><span class="material-symbols-outlined text-[16px] align-middle">calendar_today</span> ${new Date(r.date).toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mt-2 md:mt-0">
+                            <select id="status-${r.docId}" class="border border-gray-300 rounded-lg px-2 py-1 text-sm">
+                                <option value="Pending" ${r.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="Confirmed" ${r.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                                <option value="Shipped" ${r.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                                <option value="Delivered" ${r.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="Completed" ${r.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                                <option value="Cancelled" ${r.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                            <button onclick="updateStatusFromSelect('${r.docId}', 'repair')" class="btn btn-success text-xs">Update</button>
+                            ${showConfirmBtn ? `<button onclick="confirmOrder('${r.docId}', 'repair')" class="btn btn-confirm text-xs">Confirm</button>` : ''}
+                            ${showDeliveredBtn ? `<button onclick="deliveredOrder('${r.docId}', 'repair')" class="btn-delivered btn text-xs">Delivered</button>` : ''}
+                            <button onclick="adminCancelOrder('${r.docId}', 'repair')" class="btn btn-warning text-xs">Cancel</button>
+                            <button onclick="deleteOrder('${r.docId}', 'repair')" class="btn btn-danger text-xs">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // ==================== FILTERS ====================
+    function filterOrders() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        currentSearch = search;
+        applyFilters();
+    }
+    
+    function filterByStatus(status) {
+        currentFilter = status;
+        document.querySelectorAll('#page-orders .btn-outline, #page-orders .btn-primary').forEach(b => {
+            b.className = 'btn btn-outline';
+        });
+        if (event && event.target) {
+            event.target.className = 'btn btn-primary';
         }
+        applyFilters();
     }
-
-    // ==================== TABS ====================
-    function switchTab(tab, btn) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById('tab-' + tab).classList.add('active');
-        btn.classList.add('active');
+    
+    // ===== NEW: Filter by Website =====
+    function filterByWebsite(website, btn) {
+        currentWebsiteFilter = website;
+        document.querySelectorAll('.website-filter-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        applyFilters();
     }
-
+    
+    function applyFilters() {
+        let filtered = allOrders;
+        
+        // Status filter
+        if (currentFilter !== 'all') {
+            filtered = filtered.filter(o => o.status === currentFilter);
+        }
+        
+        // Website filter
+        if (currentWebsiteFilter !== 'all') {
+            filtered = filtered.filter(o => (o.website || detectWebsite(o)) === currentWebsiteFilter);
+        }
+        
+        // Search filter
+        if (currentSearch) {
+            const search = currentSearch.toLowerCase();
+            filtered = filtered.filter(o => 
+                (o.customerName || '').toLowerCase().includes(search) ||
+                (o.name || '').toLowerCase().includes(search) ||
+                (o.customerPhone || '').toLowerCase().includes(search) ||
+                (o.customerAddress || '').toLowerCase().includes(search) ||
+                (o.orderId || '').toLowerCase().includes(search) ||
+                (o.items || '').toLowerCase().includes(search)
+            );
+        }
+        
+        renderOrders(filtered, 'ordersList');
+    }
+    
+    // ===== NEW: Filter Customers =====
+    function filterCustomers() {
+        currentCustomerSearch = document.getElementById('customerSearchInput').value.toLowerCase();
+        updateCustomers();
+    }
+    
+    // ==================== CUSTOMERS ====================
+    function updateCustomers() {
+        const container = document.getElementById('customersList');
+        const allItems = [...allOrders, ...allRepairs];
+        
+        if (allItems.length === 0) {
+            container.innerHTML = `<div class="text-center py-8 text-gray-400">No customers yet</div>`;
+            return;
+        }
+        
+        const customerMap = new Map();
+        allItems.forEach(o => {
+            const name = o.customerName || o.name || 'Unknown';
+            const phone = o.customerPhone || o.phone || '';
+            const key = phone || name;
+            if (customerMap.has(key)) {
+                const data = customerMap.get(key);
+                data.orders.push(o);
+                data.totalOrders += 1;
+                data.totalSpent += (o.total || 0);
+            } else {
+                customerMap.set(key, {
+                    name: name,
+                    phone: phone,
+                    address: o.customerAddress || '',
+                    email: o.customerEmail || '',
+                    orders: [o],
+                    totalOrders: 1,
+                    totalSpent: (o.total || 0)
+                });
+            }
+        });
+        
+        let customers = Array.from(customerMap.values()).sort((a,b) => {
+            const aDate = a.orders[0]?.date || 0;
+            const bDate = b.orders[0]?.date || 0;
+            return new Date(bDate) - new Date(aDate);
+        });
+        
+        // Apply customer search filter
+        if (currentCustomerSearch) {
+            const search = currentCustomerSearch.toLowerCase();
+            customers = customers.filter(c => 
+                c.name.toLowerCase().includes(search) ||
+                c.phone.toLowerCase().includes(search) ||
+                c.email.toLowerCase().includes(search)
+            );
+        }
+        
+        if (customers.length === 0) {
+            container.innerHTML = `<div class="text-center py-8 text-gray-400">No customers found matching "${currentCustomerSearch}"</div>`;
+            return;
+        }
+        
+        container.innerHTML = customers.map(c => `
+            <div class="customer-item flex items-center justify-between py-3 border-b border-gray-100 last:border-0" onclick="showCustomerOrders('${c.name}')">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold">${(c.name || 'U')[0]}</div>
+                    <div>
+                        <p class="font-semibold text-gray-800">${highlightText(c.name, currentCustomerSearch)}</p>
+                        <p class="text-sm text-gray-500">📞 ${highlightText(c.phone, currentCustomerSearch)}</p>
+                        ${c.address ? `<p class="text-xs text-gray-400">📍 ${c.address.substring(0, 30)}${c.address.length > 30 ? '...' : ''}</p>` : ''}
+                        ${c.email ? `<p class="text-xs text-gray-400">📧 ${highlightText(c.email, currentCustomerSearch)}</p>` : ''}
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="text-sm font-semibold text-gray-800">${c.totalOrders} orders</span>
+                    <p class="text-sm text-green-600">₹${c.totalSpent}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    // ===== NEW: Highlight matching text =====
+    function highlightText(text, searchTerm) {
+        if (!searchTerm || !text) return text;
+        const index = text.toLowerCase().indexOf(searchTerm.toLowerCase());
+        if (index === -1) return text;
+        return text.substring(0, index) + 
+               `<span class="highlight-match">${text.substring(index, index + searchTerm.length)}</span>` + 
+               text.substring(index + searchTerm.length);
+    }
+    
+    // ==================== SHOW CUSTOMER ORDERS ====================
+    function showCustomerOrders(customerName) {
+        const allItems = [...allOrders, ...allRepairs];
+        const customerOrders = allItems.filter(o => (o.customerName || o.name) === customerName);
+        customerOrders.sort((a,b) => new Date(b.date) - new Date(a.date));
+        
+        document.getElementById('modalCustomerName').innerHTML = `${customerName} (${customerOrders.length} orders)`;
+        
+        const container = document.getElementById('modalOrderList');
+        container.innerHTML = customerOrders.map(o => {
+            const isRepair = o.isRepair || false;
+            const statusClass = getStatusBadge(o.status);
+            const website = o.website || detectWebsite(o);
+            const sourceBadge = getSourceBadge(website);
+            const customerNameDisp = o.customerName || o.name || 'N/A';
+            const customerPhoneDisp = o.customerPhone || o.phone || 'N/A';
+            const customerAddressDisp = o.customerAddress || 'Not provided';
+            const itemsHtml = formatItems(o.items);
+            
+            return `
+                <div class="border-b border-gray-100 py-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-bold text-gray-400">${isRepair ? '🔧' : '🛒'} ${o.orderId || o.repairId || 'Order'}</span>
+                            ${sourceBadge}
+                            <span class="status-badge ${statusClass}">${o.status || 'Pending'}</span>
+                            ${o.deliveryOTP ? `<span class="otp-display text-xs">🔑 ${o.deliveryOTP}</span>` : ''}
+                        </div>
+                        <span class="text-sm font-bold text-green-600">₹${o.total || '0'}</span>
+                    </div>
+                    <div style="font-size:12px; color:#555; margin:4px 0;">
+                        👤 ${customerNameDisp} | 📞 ${customerPhoneDisp}
+                    </div>
+                    <div style="font-size:11px; color:#888; margin:4px 0;">
+                        📍 ${customerAddressDisp}
+                    </div>
+                    <div style="margin:4px 0; font-size:12px;">${itemsHtml}</div>
+                    <div class="text-xs text-gray-400 mt-1">${new Date(o.date).toLocaleString()}</div>
+                    ${o.cancelledBy ? `<div class="text-xs text-red-500 mt-1">Cancelled by ${o.cancelledBy}</div>` : ''}
+                </div>
+            `;
+        }).join('');
+        
+        document.getElementById('orderDetailModal').style.display = 'flex';
+    }
+    
+    function closeOrderDetail() {
+        document.getElementById('orderDetailModal').style.display = 'none';
+    }
+    
+    // ==================== ACTIVITY ====================
+    function updateActivity() {
+        const container = document.getElementById('activityList');
+        const allItems = [...allOrders, ...allRepairs];
+        
+        if (allItems.length === 0) {
+            container.innerHTML = `<div class="text-center py-8 text-gray-400">No activity yet</div>`;
+            return;
+        }
+        
+        const activities = allItems.slice(0, 10).map(o => {
+            const isCancelled = o.status === 'Cancelled';
+            const cancelledBy = o.cancelledBy || '';
+            const website = o.website || detectWebsite(o);
+            const icon = o.isRepair ? '🔧' : '📱';
+            let text = '';
+            if(isCancelled) {
+                text = `[${website}] ${o.customerName || 'Unknown'} order cancelled ${cancelledBy ? 'by ' + cancelledBy : ''}`;
+            } else if(o.isRepair) {
+                text = `[${website}] ${o.customerName || 'Unknown'} booked a repair for ${o.deviceType || 'device'}`;
+            } else {
+                text = `[${website}] ${o.customerName || 'Unknown'} placed an order (${o.deliveryOTP ? 'OTP: '+o.deliveryOTP : ''})`;
+            }
+            return { icon, text, time: new Date(o.date).toLocaleString() };
+        });
+        
+        container.innerHTML = activities.map(a => `
+            <div class="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0">
+                <span class="text-2xl">${a.icon}</span>
+                <div class="flex-1">
+                    <p class="text-sm text-gray-800">${a.text}</p>
+                    <p class="text-xs text-gray-400">${a.time}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    // ==================== PAGE NAVIGATION ====================
+    function showPage(page) {
+        document.querySelectorAll('[id^="page-"]').forEach(el => el.style.display = 'none');
+        const target = document.getElementById('page-' + page);
+        if (target) target.style.display = 'block';
+        
+        const titles = {
+            dashboard: ['📊 Dashboard', 'Orders from all your websites'],
+            orders: ['🛒 Orders', 'Manage all customer orders'],
+            repairs: ['🔧 Repairs', 'Manage repair bookings'],
+            customers: ['👥 Customers', 'All customers'],
+            activity: ['🔔 Activity', 'Recent activities']
+        };
+        document.getElementById('pageTitle').textContent = titles[page]?.[0] || 'Dashboard';
+        document.getElementById('pageSub').textContent = titles[page]?.[1] || '';
+        
+        document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.sidebar-link').forEach(el => {
+            if (el.textContent.trim().toLowerCase().includes(page)) el.classList.add('active');
+        });
+        
+        document.querySelectorAll('.mobile-nav a').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.mobile-nav a').forEach(el => {
+            if (el.textContent.trim().toLowerCase().includes(page)) el.classList.add('active');
+        });
+        
+        if (page === 'dashboard') {
+            renderOrders(allOrders.slice(0, 5), 'recentOrdersList');
+            updateStats();
+        }
+        if (page === 'orders') applyFilters();
+        if (page === 'repairs') renderRepairs(allRepairs, 'repairsList');
+        if (page === 'customers') updateCustomers();
+        if (page === 'activity') updateActivity();
+    }
+    
     // ==================== TOAST ====================
-    function showToast(msg, type = 'info') {
+    function showToast(msg) {
         const toast = document.getElementById('toast');
         toast.textContent = msg;
-        toast.className = 'toast ' + type;
         toast.style.display = 'block';
         clearTimeout(toast._timeout);
-        toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, 4000);
+        toast._timeout = setTimeout(() => toast.style.display = 'none', 4000);
     }
-
-    // ==================== CLICK OUTSIDE MODAL ====================
-    document.getElementById('editModal').addEventListener('click', function(e) {
-        if (e.target === this) closeEditModal();
+    
+    // ==================== INIT ====================
+    document.addEventListener('DOMContentLoaded', function() {
+        showPage('dashboard');
+        // Reset website filter button state
+        document.querySelectorAll('.website-filter-btn').forEach((btn, idx) => {
+            if (idx === 0) btn.classList.add('active');
+        });
     });
-
-    // ==================== LOAD DATA ON START ====================
-    document.addEventListener('DOMContentLoaded', () => {
-        if (Notification.permission === 'default') Notification.requestPermission();
-    });
-
-    // Close modal on Escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeEditModal();
-    });
-
-    console.log("🔧 Trust Fix Mobile Repair - Admin Panel Loaded");
-    console.log("📊 Admin Email: " + ADMIN_EMAIL);
 </script>
+
 </body>
 </html>
