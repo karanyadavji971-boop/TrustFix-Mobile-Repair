@@ -43,7 +43,8 @@
         .form-group input,.form-group select,.form-group textarea{width:100%;padding:11px;border:1px solid #ddd;border-radius:10px;font-size:14px;background:#f9f9f9;}
         .form-group textarea{height:70px;resize:vertical;}
         .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-        .book-btn{background:#ff9800;color:white;border:none;padding:12px;border-radius:10px;width:100%;font-size:15px;font-weight:bold;cursor:pointer;}
+        .book-btn{background:#ff9800;color:white;border:none;padding:12px;border-radius:10px;width:100%;font-size:15px;font-weight:bold;cursor:pointer;transition:0.3s;}
+        .book-btn:hover{background:#fb641b;}
         .book-btn:disabled{background:#ccc;cursor:not-allowed;}
         
         .global-loading{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);display:none;justify-content:center;align-items:center;z-index:2000;flex-direction:column;}
@@ -202,6 +203,27 @@
         .footer-brand{font-weight:700;}
         .footer-brand .brand-trust{color:#ff6b35;}
         .footer-brand .brand-fix{color:#1a237e;}
+        
+        /* ===== CONFIRMATION POPUP STYLES ===== */
+        .confirmation-popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);backdrop-filter:blur(5px);display:none;justify-content:center;align-items:center;z-index:9999;padding:20px;}
+        .confirmation-popup.active{display:flex;}
+        .confirmation-popup .popup-content{background:white;border-radius:24px;padding:35px 30px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto;animation:popIn 0.4s ease;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+        @keyframes popIn{from{transform:scale(0.8);opacity:0;}to{transform:scale(1);opacity:1;}}
+        .confirmation-popup .popup-icon{text-align:center;font-size:56px;margin-bottom:10px;}
+        .confirmation-popup .popup-title{text-align:center;font-size:22px;font-weight:700;color:#1a237e;margin-bottom:6px;}
+        .confirmation-popup .popup-subtitle{text-align:center;font-size:13px;color:#666;margin-bottom:16px;}
+        .confirmation-popup .popup-divider{height:2px;background:#e8eaf6;margin:12px 0;}
+        .confirmation-popup .popup-detail{display:flex;justify-content:space-between;padding:5px 0;font-size:14px;border-bottom:1px solid #f0f0f0;}
+        .confirmation-popup .popup-detail:last-child{border-bottom:none;}
+        .confirmation-popup .popup-detail .label{color:#666;font-weight:500;}
+        .confirmation-popup .popup-detail .value{color:#1a1a1a;font-weight:600;text-align:right;}
+        .confirmation-popup .popup-otp{background:#e8f5e9;padding:8px 16px;border-radius:10px;text-align:center;font-size:20px;font-weight:700;color:#1a237e;letter-spacing:4px;margin:8px 0;font-family:monospace;border:2px dashed #4caf50;}
+        .confirmation-popup .popup-btn{background:#1a237e;color:white;border:none;padding:14px;border-radius:12px;width:100%;font-size:16px;font-weight:700;cursor:pointer;margin-top:16px;transition:0.3s;}
+        .confirmation-popup .popup-btn:hover{background:#283593;}
+        .confirmation-popup .popup-close{float:right;font-size:24px;cursor:pointer;color:#999;background:none;border:none;}
+        .confirmation-popup .popup-close:hover{color:#1a237e;}
+        .confirmation-popup .popup-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+        .confirmation-popup .popup-row .popup-detail{padding:4px 0;}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -222,7 +244,7 @@
     </div>
 </div>
 
-<!-- ===== SUPPORT BUTTON - Number Updated to 9267982460 ===== -->
+<!-- ===== SUPPORT BUTTON ===== -->
 <a href="tel:9267982460" class="support-float">
     <div class="support-ring">
         <div class="pulse-ring"></div>
@@ -237,6 +259,40 @@
 <div id="globalLoading" class="global-loading">
     <div class="spinner"></div>
     <p>⏳ Please Wait...</p>
+</div>
+
+<!-- ===== CONFIRMATION POPUP ===== -->
+<div id="confirmationPopup" class="confirmation-popup">
+    <div class="popup-content">
+        <button class="popup-close" onclick="closeConfirmationPopup()">&times;</button>
+        <div class="popup-icon">✅</div>
+        <div class="popup-title">Booking Confirmed!</div>
+        <div class="popup-subtitle">Your repair request has been submitted successfully</div>
+        <div class="popup-divider"></div>
+        
+        <div class="popup-detail"><span class="label">🆔 Repair ID</span><span class="value" id="popupRepairId">-</span></div>
+        <div class="popup-detail"><span class="label">🔑 OTP</span><span class="value" id="popupOtp">-</span></div>
+        <div class="popup-divider"></div>
+        
+        <div class="popup-row">
+            <div class="popup-detail"><span class="label">👤 Name</span><span class="value" id="popupName">-</span></div>
+            <div class="popup-detail"><span class="label">📞 Phone</span><span class="value" id="popupPhone">-</span></div>
+        </div>
+        <div class="popup-detail"><span class="label">📍 Address</span><span class="value" id="popupAddress" style="text-align:right;">-</span></div>
+        <div class="popup-divider"></div>
+        <div class="popup-row">
+            <div class="popup-detail"><span class="label">📱 Device</span><span class="value" id="popupDevice">-</span></div>
+            <div class="popup-detail"><span class="label">🏷️ Brand</span><span class="value" id="popupBrand">-</span></div>
+        </div>
+        <div class="popup-detail"><span class="label">⚠️ Issue</span><span class="value" id="popupIssue" style="text-align:right;">-</span></div>
+        <div class="popup-divider"></div>
+        
+        <div style="background:#e3f2fd;padding:10px;border-radius:10px;text-align:center;font-size:12px;color:#1565c0;margin:6px 0;">
+            📧 OTP has been sent to admin email. Our team will contact you shortly!
+        </div>
+        
+        <button class="popup-btn" onclick="closeConfirmationPopup()"><i class="fas fa-check-circle"></i> OK, Got it!</button>
+    </div>
 </div>
 
 <!-- ===== BOOKING FORM ===== -->
@@ -771,7 +827,8 @@
                 customerEmail: currentUser.email, customerName: customerName,
                 customerPhone: customerPhone, customerAddress: customerAddress,
                 items: itemsList, total: total, paymentMethod: paymentNames[selectedPayment], 
-                utr: utr || "COD", status: "Pending", deliveryOTP: otp 
+                utr: utr || "COD", status: "Pending", deliveryOTP: otp,
+                website: "Trust Fix"
             };
             await db.collection("orders").add(orderData);
             const templateParams = { 
@@ -1020,10 +1077,20 @@
         finally { showGlobalLoading(false); }
     }
     
-    // ==================== REPAIR FORM ====================
+    // ============================================================
+    // ==================== REPAIR FORM (UPDATED) ====================
+    // ============================================================
     document.getElementById('repairForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        if(!currentUser){ showToast("Please login first!"); showLoginModal(); return; }
+        
+        // ===== CHECK LOGIN =====
+        if(!currentUser){ 
+            showToast("⚠️ Please login first!"); 
+            showLoginModal(); 
+            return; 
+        }
+        
+        // ===== GET FORM VALUES =====
         const name = document.getElementById('custName').value.trim();
         const phone = document.getElementById('custPhone').value.trim();
         const address = document.getElementById('custAddress').value.trim();
@@ -1031,30 +1098,130 @@
         const deviceBrand = document.getElementById('deviceBrand').value;
         const deviceModel = document.getElementById('deviceModel').value.trim();
         const deviceFaults = document.getElementById('deviceFaults').value.trim();
-        if(!name || !phone || !address || !deviceType || !deviceBrand || !deviceModel || !deviceFaults) { showToast("Please fill all fields!"); return; }
-        if(phone.length < 10) { showToast("Enter valid phone number!"); return; }
+        
+        // ===== VALIDATION =====
+        if(!name || !phone || !address || !deviceType || !deviceBrand || !deviceModel || !deviceFaults) { 
+            showToast("⚠️ Please fill all fields!"); 
+            return; 
+        }
+        if(phone.length < 10) { 
+            showToast("⚠️ Enter valid phone number!"); 
+            return; 
+        }
+        
+        // ===== SHOW LOADING =====
         showGlobalLoading(true);
+        
         try {
+            // ===== GENERATE REPAIR ID & OTP =====
             const repairId = "REP" + Date.now() + Math.floor(Math.random()*1000);
             const otp = generateOTP();
-            const repairData = { repairId, date: new Date().toISOString(), type: "repair", customerEmail: currentUser.email, customerName: name, customerPhone: phone, customerAddress: address, deviceType, deviceBrand, deviceModel, deviceFaults, status: "Pending", deliveryOTP: otp };
+            
+            // ===== SAVE TO FIREBASE =====
+            const repairData = { 
+                repairId, 
+                date: new Date().toISOString(), 
+                type: "repair", 
+                customerEmail: currentUser.email, 
+                customerName: name, 
+                customerPhone: phone, 
+                customerAddress: address, 
+                deviceType, 
+                deviceBrand, 
+                deviceModel, 
+                deviceFaults, 
+                status: "Pending", 
+                deliveryOTP: otp,
+                website: "Trust Fix"  // Website name add kiya
+            };
             await db.collection("repairs").add(repairData);
-            const templateParams = { to_email: ADMIN_EMAIL, customer_name: name, customer_phone: phone, customer_address: address, device_type: deviceType, device_brand: deviceBrand, device_model: deviceModel, device_faults: deviceFaults, order_date: new Date().toLocaleString(), order_type: "Repair Booking", action_type: "NEW REPAIR", delivery_otp: otp };
+            
+            // ===== SEND EMAIL =====
+            const templateParams = { 
+                to_email: ADMIN_EMAIL, 
+                customer_name: name, 
+                customer_phone: phone, 
+                customer_address: address, 
+                device_type: deviceType, 
+                device_brand: deviceBrand, 
+                device_model: deviceModel, 
+                device_faults: deviceFaults, 
+                order_date: new Date().toLocaleString(), 
+                order_type: "Repair Booking", 
+                action_type: "NEW REPAIR", 
+                delivery_otp: otp 
+            };
             await emailjs.send("service_gbou2dl", "template_lp2zf4b", templateParams);
+            
+            // ===== SEND NOTIFICATION =====
             checkForNewRepair(repairData);
-            showToast("✅ Repair request sent! OTP: " + otp);
+            
+            // ============================================================
+            // ===== 🔥 SHOW CONFIRMATION POPUP (NEW) =====
+            // ============================================================
+            showConfirmationPopup({
+                repairId: repairId,
+                otp: otp,
+                name: name,
+                phone: phone,
+                address: address,
+                deviceType: deviceType,
+                deviceBrand: deviceBrand,
+                deviceModel: deviceModel,
+                deviceFaults: deviceFaults
+            });
+            
+            // ============================================================
+            // ===== 🔥 CLEAR FORM (NEW) =====
+            // ============================================================
             document.getElementById('repairForm').reset();
-        } catch(e){ showToast("Error: " + e.message); }
-        finally { showGlobalLoading(false); }
+            
+        } catch(e){ 
+            showToast("❌ Error: " + e.message); 
+        }
+        finally { 
+            showGlobalLoading(false); 
+        }
     });
+    
+    // ==================== CONFIRMATION POPUP FUNCTIONS ====================
+    function showConfirmationPopup(data) {
+        document.getElementById('popupRepairId').textContent = data.repairId;
+        document.getElementById('popupOtp').textContent = data.otp;
+        document.getElementById('popupName').textContent = data.name;
+        document.getElementById('popupPhone').textContent = data.phone;
+        document.getElementById('popupAddress').textContent = data.address;
+        document.getElementById('popupDevice').textContent = data.deviceType;
+        document.getElementById('popupBrand').textContent = data.deviceBrand + ' ' + data.deviceModel;
+        document.getElementById('popupIssue').textContent = data.deviceFaults;
+        
+        document.getElementById('confirmationPopup').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeConfirmationPopup() {
+        document.getElementById('confirmationPopup').classList.remove('active');
+        document.body.style.overflow = 'auto';
+        showToast("✅ Booking confirmed! OTP: " + document.getElementById('popupOtp').textContent);
+    }
     
     // ==================== NOTIFICATIONS ====================
     function checkForNewRepair(repairData) {
-        try { const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3'); audio.play(); } catch(e) {}
+        try { 
+            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3'); 
+            audio.play(); 
+        } catch(e) {}
         if (Notification.permission === "granted") {
-            new Notification("🔧 New Repair Booking!", { body: `Customer: ${repairData.customerName}\nOTP: ${repairData.deliveryOTP}`, icon: "https://i.imgur.com/8FkqJpR.jpg" });
-        } else if (Notification.permission !== "denied") { Notification.requestPermission(); }
-        setTimeout(() => { showToast(`🔔 NEW BOOKING! ${repairData.customerName} - OTP: ${repairData.deliveryOTP}`); }, 1000);
+            new Notification("🔧 New Repair Booking!", { 
+                body: `Customer: ${repairData.customerName}\nOTP: ${repairData.deliveryOTP}`, 
+                icon: "https://i.imgur.com/8FkqJpR.jpg" 
+            });
+        } else if (Notification.permission !== "denied") { 
+            Notification.requestPermission(); 
+        }
+        setTimeout(() => { 
+            showToast(`🔔 NEW BOOKING! ${repairData.customerName} - OTP: ${repairData.deliveryOTP}`); 
+        }, 1000);
     }
     
     function listenForNewBookings() {
@@ -1073,7 +1240,13 @@
     function showLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
     function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
     function closeHistoryModal() { document.getElementById('historyModal').style.display = 'none'; }
-    function showToast(msg) { const t=document.getElementById('toast'); t.innerText=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
+    function showToast(msg) { 
+        const t = document.getElementById('toast'); 
+        t.innerText = msg; 
+        t.style.display = 'block'; 
+        clearTimeout(t._timeout);
+        t._timeout = setTimeout(() => t.style.display = 'none', 3000); 
+    }
     
     renderCategories();
     renderProducts();
