@@ -11,14 +11,14 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Trust Fix Mobile Repair - Mobile Repair & Accessories</title>
+    <title>Trust Fix Repair - Mobile & Laptop Repair</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Segoe UI',Roboto,sans-serif;background:#f0f4f0;color:#1a1a1a;padding-bottom:70px;}
+        body{font-family:'Segoe UI',Roboto,sans-serif;background:#f0f4f0;color:#1a1a1a;padding-bottom:70px;transition:all 0.3s ease;}
         
         .header{background:#1a237e;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:100;}
         .header h1{color:white;font-size:20px;}
@@ -31,6 +31,57 @@
         .user-name{background:#283593;color:white;padding:4px 10px;border-radius:25px;font-size:11px;}
         .logout-btn{background:#ff6b35;color:white;border:none;padding:4px 10px;border-radius:20px;cursor:pointer;font-size:11px;}
         .order-history-btn{background:#ff9800;color:white;border:none;padding:4px 10px;border-radius:20px;cursor:pointer;font-size:11px;}
+        
+        /* ===== SERVICE TOGGLE BUTTONS ===== */
+        .service-toggle {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            padding: 16px 20px;
+            background: white;
+            border-bottom: 2px solid #e8ecf1;
+            flex-wrap: wrap;
+        }
+        .service-toggle .toggle-btn {
+            padding: 10px 28px;
+            border: 2px solid #1a237e;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            color: #1a237e;
+        }
+        .service-toggle .toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(26,35,126,0.15);
+        }
+        .service-toggle .toggle-btn.active {
+            background: #1a237e;
+            color: white;
+        }
+        .service-toggle .toggle-btn .icon { margin-right: 6px; }
+        
+        /* ===== LAPTOP MODE STYLES ===== */
+        body.laptop-mode .header { background: #004d40; }
+        body.laptop-mode .header p { color: #80cbc4; }
+        body.laptop-mode .service-toggle .toggle-btn { border-color: #004d40; color: #004d40; }
+        body.laptop-mode .service-toggle .toggle-btn.active { background: #004d40; color: white; }
+        body.laptop-mode .booking-section h2 { color: #004d40; }
+        body.laptop-mode .services-section { background: #004d40; }
+        body.laptop-mode .services-section .service-card { background: #00695c; }
+        body.laptop-mode .brand-trust { color: #26a69a; }
+        body.laptop-mode .brand-fix { color: #ffffff; }
+        body.laptop-mode .support-float .support-ring { background: linear-gradient(135deg,#00bfa5,#00695c); }
+        body.laptop-mode .book-btn { background: #00695c; }
+        body.laptop-mode .book-btn:hover { background: #004d40; }
+        body.laptop-mode .otp-badge { background: #004d40; }
+        body.laptop-mode .order-history-btn { background: #00695c; }
+        body.laptop-mode .header h1 span:last-child { color: #26a69a; }
+        
+        /* ===== LAPTOP MODE - HIDE ACCESSORIES ===== */
+        body.laptop-mode .products-section { display: none; }
         
         .support-float{position:fixed;bottom:100px;right:20px;z-index:150;display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;animation:float-bounce 3s ease-in-out infinite;cursor:pointer;}
         @keyframes float-bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
@@ -88,7 +139,6 @@
         .product-card .add-cart-btn:hover{background:#fb641b;transform:scale(1.02);}
         
         .category-badge{position:absolute;top:8px;left:8px;color:white;font-size:9px;padding:2px 10px;border-radius:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;z-index:2;}
-        
         .product-card.active-card{transform:scale(0.96);box-shadow:0 0 0 3px #1a237e,0 8px 25px rgba(26,35,126,0.3);}
         .product-card.active-card .product-img{transform:scale(0.98);}
         
@@ -240,8 +290,8 @@
 <!-- ===== HEADER ===== -->
 <div class="header">
     <div>
-        <h1><i class="fas fa-tools"></i> <span class="brand-trust">Trust</span> <span class="brand-fix">Fix</span> <span style="color:#ff9800;">Mobile</span> Repair</h1>
-        <p>🔧 Fast, Reliable & Affordable Mobile Repair</p>
+        <h1><i class="fas fa-tools"></i> <span class="brand-trust">Trust</span> <span class="brand-fix">Fix</span> <span style="color:#ff9800;">Repair</span></h1>
+        <p id="headerTagline">🔧 Fast, Reliable & Affordable Mobile Repair</p>
     </div>
     <div class="header-right">
         <div id="authSection"><button class="login-btn" onclick="showLoginModal()"><i class="fas fa-user"></i> Login</button></div>
@@ -252,8 +302,18 @@
     </div>
 </div>
 
-<!-- ===== SUPPORT BUTTON (Popup with 2 Numbers) ===== -->
-<div class="support-float" onclick="showCallPopup()">
+<!-- ===== SERVICE TOGGLE BUTTONS ===== -->
+<div class="service-toggle">
+    <button class="toggle-btn active" id="mobileBtn" onclick="switchService('mobile')">
+        <span class="icon">📱</span> Mobile Repair
+    </button>
+    <button class="toggle-btn" id="laptopBtn" onclick="switchService('laptop')">
+        <span class="icon">💻</span> Laptop Repair
+    </button>
+</div>
+
+<!-- ===== SUPPORT BUTTON ===== -->
+<div class="support-float" onclick="showCallPopup()" style="cursor:pointer;">
     <div class="support-ring">
         <div class="pulse-ring"></div>
         <div class="pulse-ring"></div>
@@ -263,47 +323,45 @@
     <span class="support-label"><i class="fas fa-headset"></i> Call / WhatsApp</span>
 </div>
 
-<!-- ===== CALL POPUP (2 Numbers) ===== -->
+<!-- ===== CALL POPUP ===== -->
 <div id="callPopup" class="confirmation-popup">
     <div class="popup-content" style="max-width:380px;">
         <button class="popup-close" onclick="closeCallPopup()">&times;</button>
         <div class="popup-icon">📞</div>
         <div class="popup-title">Contact Us</div>
-        <div class="popup-subtitle">Choose a number to call us</div>
+        <div class="popup-subtitle" id="callPopupSubtitle">Choose a number to call us</div>
         <div class="popup-divider"></div>
         
         <div style="text-align:center; font-size:13px; color:#666; margin-bottom:12px; background:#fff3e0; padding:10px; border-radius:8px; border-left:4px solid #ff9800;">
             ⚠️ If one number is not responding, please try the other number.
         </div>
         
-        <!-- Number 1 -->
-        <a href="tel:9711678678" style="text-decoration:none; display:block;">
+        <!-- Number 1 - Mobile Mode: 9711678678, Laptop Mode: 9625513082 -->
+        <a href="tel:9711678678" id="callNumber1" style="text-decoration:none; display:block;">
             <div style="background:#e8f5e9; border:2px solid #4caf50; border-radius:12px; padding:14px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; transition:0.3s;">
                 <div>
-                    <span style="font-size:18px; font-weight:700; color:#1a237e;">📱 Number 1</span>
-                    <div style="font-size:20px; font-weight:bold; color:#2e7d32;">9711678678</div>
+                    <span style="font-size:18px; font-weight:700; color:#1a237e;" id="callLabel1">📱 Number 1</span>
+                    <div style="font-size:20px; font-weight:bold; color:#2e7d32;" id="callDisplay1">9711678678</div>
                 </div>
                 <span style="background:#4caf50; color:white; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:bold;">CALL NOW</span>
             </div>
         </a>
         
-        <!-- Number 2 -->
-        <a href="tel:9267982490" style="text-decoration:none; display:block;">
+        <!-- Number 2 - Both Mobile & Laptop: 9267982460 -->
+        <a href="tel:9267982460" id="callNumber2" style="text-decoration:none; display:block;">
             <div style="background:#e3f2fd; border:2px solid #1a237e; border-radius:12px; padding:14px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; transition:0.3s;">
                 <div>
-                    <span style="font-size:18px; font-weight:700; color:#1a237e;">📱 Number 2</span>
-                    <div style="font-size:20px; font-weight:bold; color:#1a237e;">9267982490</div>
+                    <span style="font-size:18px; font-weight:700; color:#1a237e;" id="callLabel2">📱 Number 2</span>
+                    <div style="font-size:20px; font-weight:bold; color:#1a237e;" id="callDisplay2">9267982460</div>
                 </div>
                 <span style="background:#1a237e; color:white; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:bold;">CALL NOW</span>
             </div>
         </a>
         
         <div class="popup-divider"></div>
-        
         <div style="text-align:center; font-size:11px; color:#999; margin-top:8px;">
             📞 Our team is available 24/7 to help you!
         </div>
-        
         <button class="popup-btn" onclick="closeCallPopup()" style="background:#666; margin-top:10px;">Close</button>
     </div>
 </div>
@@ -350,54 +408,97 @@
 
 <!-- ===== BOOKING FORM ===== -->
 <div class="booking-section">
-    <h2><i class="fas fa-calendar-check"></i> Fast & Easy Booking</h2>
+    <h2 id="formTitle"><i class="fas fa-calendar-check"></i> Fast & Easy Booking</h2>
     <form id="repairForm">
         <div class="form-group"><label><i class="fas fa-user"></i> Name *</label><input type="text" id="custName" placeholder="Enter your full name" required></div>
         <div class="form-group"><label><i class="fas fa-phone"></i> Phone no. *</label><input type="tel" id="custPhone" placeholder="Enter your mobile number" required></div>
         <div class="form-group"><label><i class="fas fa-map-marker-alt"></i> Address *</label><textarea id="custAddress" placeholder="Enter your full address for pickup" rows="2" required></textarea></div>
         <div class="form-row">
-            <div class="form-group"><label><i class="fas fa-mobile-alt"></i> Select Device *</label>
-                <select id="deviceType"><option value="">Select Device</option><option value="Mobile Phone">Mobile Phone</option><option value="iPhone">iPhone</option><option value="Android Phone">Android Phone</option><option value="Tablet">Tablet</option></select>
+            <div class="form-group"><label><i class="fas fa-mobile-alt"></i> <span id="deviceLabel">Select Device</span> *</label>
+                <select id="deviceType">
+                    <option value="">Select Device</option>
+                    <!-- Mobile Options -->
+                    <option class="mobile-option" value="Mobile Phone">Mobile Phone</option>
+                    <option class="mobile-option" value="iPhone">iPhone</option>
+                    <option class="mobile-option" value="Android Phone">Android Phone</option>
+                    <option class="mobile-option" value="Tablet">Tablet</option>
+                    <!-- Laptop Options -->
+                    <option class="laptop-option" value="Laptop" style="display:none;">Laptop</option>
+                    <option class="laptop-option" value="MacBook" style="display:none;">MacBook</option>
+                    <option class="laptop-option" value="Windows Laptop" style="display:none;">Windows Laptop</option>
+                    <option class="laptop-option" value="Gaming Laptop" style="display:none;">Gaming Laptop</option>
+                </select>
             </div>
-            <div class="form-group"><label><i class="fas fa-trademark"></i> Select Brand *</label>
-                <select id="deviceBrand"><option value="">Select Brand</option><option value="Samsung">Samsung</option><option value="Apple/iPhone">Apple/iPhone</option><option value="Xiaomi">Xiaomi</option><option value="OnePlus">OnePlus</option><option value="Vivo">Vivo</option><option value="Oppo">Oppo</option><option value="Realme">Realme</option><option value="Other">Other</option></select>
+            <div class="form-group"><label><i class="fas fa-trademark"></i> <span id="brandLabel">Select Brand</span> *</label>
+                <select id="deviceBrand">
+                    <option value="">Select Brand</option>
+                    <!-- Mobile Brands -->
+                    <option class="mobile-brand" value="Samsung">Samsung</option>
+                    <option class="mobile-brand" value="Apple/iPhone">Apple/iPhone</option>
+                    <option class="mobile-brand" value="Xiaomi">Xiaomi</option>
+                    <option class="mobile-brand" value="OnePlus">OnePlus</option>
+                    <option class="mobile-brand" value="Vivo">Vivo</option>
+                    <option class="mobile-brand" value="Oppo">Oppo</option>
+                    <option class="mobile-brand" value="Realme">Realme</option>
+                    <option class="mobile-brand" value="Other">Other</option>
+                    <!-- Laptop Brands -->
+                    <option class="laptop-brand" value="Dell" style="display:none;">Dell</option>
+                    <option class="laptop-brand" value="HP" style="display:none;">HP</option>
+                    <option class="laptop-brand" value="Lenovo" style="display:none;">Lenovo</option>
+                    <option class="laptop-brand" value="Apple" style="display:none;">Apple</option>
+                    <option class="laptop-brand" value="Acer" style="display:none;">Acer</option>
+                    <option class="laptop-brand" value="Asus" style="display:none;">Asus</option>
+                    <option class="laptop-brand" value="MSI" style="display:none;">MSI</option>
+                    <option class="laptop-brand" value="Other" style="display:none;">Other</option>
+                </select>
             </div>
         </div>
-        <div class="form-group"><label><i class="fas fa-microchip"></i> Device Model *</label><input type="text" id="deviceModel" placeholder="e.g., iPhone 13, Galaxy S23"></div>
-        <div class="form-group"><label><i class="fas fa-exclamation-triangle"></i> Device Faults / Problem *</label>
+        <div class="form-group"><label><i class="fas fa-microchip"></i> <span id="modelLabel">Device Model</span> *</label><input type="text" id="deviceModel" placeholder="e.g., iPhone 13, Galaxy S23, Dell XPS 13"></div>
+        <div class="form-group"><label><i class="fas fa-exclamation-triangle"></i> <span id="faultLabel">Device Faults / Problem</span> *</label>
             <textarea id="deviceFaults" placeholder="Describe the issue"></textarea>
         </div>
-        <button type="submit" class="book-btn" id="bookNowBtn"><i class="fas fa-check-circle"></i> Book Now</button>
+        <button type="submit" class="book-btn" id="bookNowBtn"><i class="fas fa-check-circle"></i> <span id="bookBtnText">Book Now</span></button>
     </form>
 </div>
 
-<!-- ===== SERVICES ===== -->
-<div class="services-section">
-    <h3><i class="fas fa-wrench"></i> Our Mobile Repair Services</h3>
-    <div class="services-grid">
-        <div class="service-card"><i class="fas fa-mobile-alt"></i><span>🔧 Screen Repair</span></div>
-        <div class="service-card"><i class="fas fa-battery-full"></i><span>🔋 Battery Replacement</span></div>
-        <div class="service-card"><i class="fas fa-plug"></i><span>⚡ Charging Port</span></div>
-        <div class="service-card"><i class="fas fa-tint"></i><span>💧 Water Damage</span></div>
-        <div class="service-card"><i class="fas fa-volume-up"></i><span>🔊 Speaker/Mic Repair</span></div>
-        <div class="service-card"><i class="fas fa-microchip"></i><span>🔧 Any Problem Fix</span></div>
+<!-- ===== SERVICES SECTION ===== -->
+<div class="services-section" id="servicesSection">
+    <h3 id="servicesTitle"><i class="fas fa-wrench"></i> Our Repair Services</h3>
+    <div class="services-grid" id="servicesGrid">
+        <!-- Mobile Services -->
+        <div class="service-card mobile-service"><i class="fas fa-mobile-alt"></i><span>🔧 Screen Repair</span></div>
+        <div class="service-card mobile-service"><i class="fas fa-battery-full"></i><span>🔋 Battery Replacement</span></div>
+        <div class="service-card mobile-service"><i class="fas fa-plug"></i><span>⚡ Charging Port</span></div>
+        <div class="service-card mobile-service"><i class="fas fa-tint"></i><span>💧 Water Damage</span></div>
+        <div class="service-card mobile-service"><i class="fas fa-volume-up"></i><span>🔊 Speaker/Mic Repair</span></div>
+        <div class="service-card mobile-service"><i class="fas fa-microchip"></i><span>🔧 Any Problem Fix</span></div>
+        <!-- Laptop Services -->
+        <div class="service-card laptop-service" style="display:none;"><i class="fas fa-laptop"></i><span>🔧 Screen Replacement</span></div>
+        <div class="service-card laptop-service" style="display:none;"><i class="fas fa-bolt"></i><span>🔋 Battery Replacement</span></div>
+        <div class="service-card laptop-service" style="display:none;"><i class="fas fa-plug"></i><span>⚡ Charging Port</span></div>
+        <div class="service-card laptop-service" style="display:none;"><i class="fas fa-memory"></i><span>💾 RAM / SSD Upgrade</span></div>
+        <div class="service-card laptop-service" style="display:none;"><i class="fas fa-fan"></i><span>🌀 Overheating Fix</span></div>
+        <div class="service-card laptop-service" style="display:none;"><i class="fas fa-keyboard"></i><span>⌨️ Keyboard Repair</span></div>
+        <div class="service-card laptop-service" style="display:none;"><i class="fas fa-mouse-pointer"></i><span>🖱️ Trackpad Repair</span></div>
+        <div class="service-card laptop-service" style="display:none;"><i class="fas fa-microchip"></i><span>🔧 Any Problem Fix</span></div>
     </div>
 </div>
 
-<!-- ===== PRODUCTS ===== -->
-<div class="products-section">
-    <h3><i class="fas fa-shopping-bag"></i> Mobile Accessories</h3>
+<!-- ===== PRODUCTS SECTION ===== -->
+<div class="products-section" id="productsSection">
+    <h3 id="productsTitle"><i class="fas fa-shopping-bag"></i> Mobile Accessories</h3>
     <div class="category-tabs" id="categoryTabs"></div>
     <div class="products-grid" id="productsGrid"></div>
 </div>
 
 <!-- ===== FOOTER ===== -->
 <footer>
-    <p class="footer-brand">© 2026 <span class="brand-trust">Trust</span> <span class="brand-fix">Fix</span> Mobile Repair | Mobile Repair & Accessories Store</p>
-    <p style="margin-top:4px; font-size:10px; color:#999;"><i class="fas fa-map-marker-alt"></i> India's Trusted Mobile Repair Service</p>
+    <p class="footer-brand">© 2026 <span class="brand-trust">Trust</span> <span class="brand-fix">Fix</span> Repair | Mobile & Laptop Repair Service</p>
+    <p style="margin-top:4px; font-size:10px; color:#999;"><i class="fas fa-map-marker-alt"></i> India's Trusted Repair Service</p>
 </footer>
 
-<!-- ===== PRODUCT DETAIL MODAL ===== -->
+<!-- ===== MODALS ===== -->
+<!-- PRODUCT DETAIL MODAL -->
 <div id="detailModal" class="detail-modal">
     <div class="detail-modal-content">
         <button class="close-modal" onclick="closeDetailModal()">✕</button>
@@ -518,11 +619,103 @@
     let selectedCancelItemType = null;
     const ADMIN_EMAIL = "abhishekbainsla363@gmail.com";
     
+    // ==================== SERVICE STATE ====================
+    let currentService = 'mobile';
+    
+    // ==================== SWITCH SERVICE ====================
+    function switchService(service) {
+        currentService = service;
+        
+        document.getElementById('mobileBtn').classList.toggle('active', service === 'mobile');
+        document.getElementById('laptopBtn').classList.toggle('active', service === 'laptop');
+        document.body.classList.toggle('laptop-mode', service === 'laptop');
+        
+        const tagline = document.getElementById('headerTagline');
+        if (service === 'mobile') {
+            tagline.textContent = '🔧 Fast, Reliable & Affordable Mobile Repair';
+        } else {
+            tagline.textContent = '💻 Fast, Reliable & Affordable Laptop Repair';
+        }
+        
+        document.getElementById('formTitle').innerHTML = service === 'mobile' ? 
+            '<i class="fas fa-calendar-check"></i> Fast & Easy Mobile Booking' : 
+            '<i class="fas fa-calendar-check"></i> Fast & Easy Laptop Booking';
+        
+        document.getElementById('bookBtnText').textContent = service === 'mobile' ? 'Book Mobile Repair' : 'Book Laptop Repair';
+        
+        document.getElementById('deviceLabel').textContent = service === 'mobile' ? 'Select Device' : 'Select Laptop';
+        document.getElementById('brandLabel').textContent = service === 'mobile' ? 'Select Brand' : 'Select Laptop Brand';
+        document.getElementById('modelLabel').textContent = service === 'mobile' ? 'Device Model' : 'Laptop Model';
+        document.getElementById('faultLabel').textContent = service === 'mobile' ? 'Device Faults / Problem' : 'Laptop Faults / Problem';
+        
+        document.querySelectorAll('.mobile-option').forEach(el => el.style.display = service === 'mobile' ? '' : 'none');
+        document.querySelectorAll('.laptop-option').forEach(el => el.style.display = service === 'laptop' ? '' : 'none');
+        document.querySelectorAll('.mobile-brand').forEach(el => el.style.display = service === 'mobile' ? '' : 'none');
+        document.querySelectorAll('.laptop-brand').forEach(el => el.style.display = service === 'laptop' ? '' : 'none');
+        
+        document.getElementById('deviceType').value = '';
+        document.getElementById('deviceBrand').value = '';
+        
+        document.querySelectorAll('.mobile-service').forEach(el => el.style.display = service === 'mobile' ? '' : 'none');
+        document.querySelectorAll('.laptop-service').forEach(el => el.style.display = service === 'laptop' ? '' : 'none');
+        
+        document.getElementById('servicesTitle').innerHTML = service === 'mobile' ?
+            '<i class="fas fa-wrench"></i> Our Mobile Repair Services' :
+            '<i class="fas fa-wrench"></i> Our Laptop Repair Services';
+        
+        document.getElementById('productsTitle').innerHTML = service === 'mobile' ?
+            '<i class="fas fa-shopping-bag"></i> Mobile Accessories' :
+            '<i class="fas fa-shopping-bag"></i> Laptop Accessories';
+        
+        const productsSection = document.getElementById('productsSection');
+        if (service === 'mobile') {
+            productsSection.style.display = 'block';
+            renderCategories();
+            renderProducts();
+        } else {
+            productsSection.style.display = 'none';
+        }
+        
+        updateCallNumbers(service);
+        showToast(service === 'mobile' ? '📱 Switched to Mobile Repair' : '💻 Switched to Laptop Repair');
+    }
+    
+    // ==================== UPDATE CALL NUMBERS ====================
+    function updateCallNumbers(service) {
+        const num1 = document.getElementById('callNumber1');
+        const num2 = document.getElementById('callNumber2');
+        const display1 = document.getElementById('callDisplay1');
+        const display2 = document.getElementById('callDisplay2');
+        const label1 = document.getElementById('callLabel1');
+        const label2 = document.getElementById('callLabel2');
+        const subtitle = document.getElementById('callPopupSubtitle');
+        
+        if (service === 'mobile') {
+            // Mobile Numbers: 9711678678 and 9267982460
+            num1.href = 'tel:9711678678';
+            display1.textContent = '9711678678';
+            label1.textContent = '📱 Number 1 (Mobile)';
+            num2.href = 'tel:9267982460';
+            display2.textContent = '9267982460';
+            label2.textContent = '📱 Number 2 (Mobile)';
+            subtitle.textContent = 'Choose a number to call us for Mobile Repair';
+        } else {
+            // Laptop Numbers: 9625513082 and 9267982460
+            num1.href = 'tel:9625513082';
+            display1.textContent = '9625513082';
+            label1.textContent = '💻 Number 1 (Laptop)';
+            num2.href = 'tel:9267982460';
+            display2.textContent = '9267982460';
+            label2.textContent = '💻 Number 2 (Laptop)';
+            subtitle.textContent = 'Choose a number to call us for Laptop Repair';
+        }
+    }
+    
     function generateOTP() {
         return Math.floor(100000 + Math.random() * 900000).toString();
     }
     
-    // ==================== ALL 10 PRODUCTS ====================
+    // ==================== PRODUCTS ====================
     let products = [
         {
             id: "ACE-CHARGER-35W-001",
@@ -535,7 +728,8 @@
             catClass: "cat-charger",
             images: ["https://i.ibb.co/HLNmg6JC/IMG-20260616-182447.png", "https://i.ibb.co/xSVy5Skm/Chat-GPT-Image-Jun-16-2026-06-07-06-PM.png"],
             desc: "35W Super Fast Charging with Qualcomm Quick Charge 4.0+.",
-            features: ["35W Super Fast Charging", "Quick Charge 4.0+", "Dash, Warp, VOOC Support", "iPhone & Android Compatible"]
+            features: ["35W Super Fast Charging", "Quick Charge 4.0+", "Dash, Warp, VOOC Support", "iPhone & Android Compatible"],
+            type: "mobile"
         },
         {
             id: "UBON-J38-ARMY-001",
@@ -548,7 +742,8 @@
             catClass: "cat-earbuds",
             images: ["https://i.ibb.co/C5n7q1qC/Chat-GPT-Image-Jun-17-2026-08-46-12-PM.png"],
             desc: "UBON J38 Army Edition - Battle Ready Sound!",
-            features: ["🎵 Big Daddy Bass", "🔋 36 Hours Playtime", "📶 Bluetooth 5.4", "⚡ Type-C Fast Charging"]
+            features: ["🎵 Big Daddy Bass", "🔋 36 Hours Playtime", "📶 Bluetooth 5.4", "⚡ Type-C Fast Charging"],
+            type: "mobile"
         },
         {
             id: "UBON-J31-FREEDOM-001",
@@ -561,7 +756,8 @@
             catClass: "cat-earbuds",
             images: ["https://i.ibb.co/Mx690MHF/Chat-GPT-Image-Jun-17-2026-08-47-33-PM.png"],
             desc: "UBON J31 Freedom Series – Freedom Ka Naya Style!",
-            features: ["🔋 40 Hours Playtime", "🎤 Built-in ENC", "📶 Bluetooth 5.3", "🗣️ Voice Assistant Support"]
+            features: ["🔋 40 Hours Playtime", "🎤 Built-in ENC", "📶 Bluetooth 5.3", "🗣️ Voice Assistant Support"],
+            type: "mobile"
         },
         {
             id: "UBON-HP705-BEAST-001",
@@ -574,7 +770,8 @@
             catClass: "cat-headphones",
             images: ["https://i.ibb.co/M5DfSCYG/Jun-17-2026-08-54-58-PM.png"],
             desc: "UBON HP-705 Beast – Born To Be Free!",
-            features: ["🎵 Big Daddy Bass", "🔋 30 Hours Playtime", "📶 Bluetooth 5.4", "🔄 Foldable Design"]
+            features: ["🎵 Big Daddy Bass", "🔋 30 Hours Playtime", "📶 Bluetooth 5.4", "🔄 Foldable Design"],
+            type: "mobile"
         },
         {
             id: "UBON-HP700-HIPHOP-001",
@@ -586,17 +783,9 @@
             categoryLabel: "HEADPHONES",
             catClass: "cat-headphones",
             images: ["https://i.ibb.co/4ZK2zsMS/image.jpg"],
-            desc: "UBON Black HP-700 Hip-Hop Born to be Free Headphones – Premium look wala black headphone jo specially Hip-Hop lovers ke liye banaya gaya hai heavy bass ke saath. Tiger Shroff ka favorite!",
-            features: [
-                "🎵 Big Daddy Bass – Deep & Powerful Sound",
-                "🔋 30 Hours Playtime (at moderate volume)",
-                "📶 Bluetooth v5.4 Wireless Technology",
-                "💨 Ultra Light Weight",
-                "🔄 Foldable & Portable Design",
-                "☁️ Soft Cushion Comfort",
-                "⚡ Type-C Fast Charging",
-                "🌟 Tiger Shroff - Born to be Free"
-            ]
+            desc: "UBON Black HP-700 Hip-Hop Born to be Free Headphones",
+            features: ["🎵 Big Daddy Bass", "🔋 30 Hours Playtime", "📶 Bluetooth v5.4", "💨 Ultra Light Weight", "🔄 Foldable & Portable Design", "☁️ Soft Cushion Comfort", "⚡ Type-C Fast Charging"],
+            type: "mobile"
         },
         {
             id: "UBON-PB-SX302-001",
@@ -609,7 +798,8 @@
             catClass: "cat-powerbank",
             images: ["https://i.ibb.co/LdWWLWC8/Chat-GPT-Image-Jun-17-2026-08-52-23-PM.png"],
             desc: "UBON Premium PB-SX302 - 30000mAh Power Bank",
-            features: ["🔋 30000mAh Capacity", "⚡ 25W Fast Charging", "📊 LED Display", "🔌 Dual Input & Output"]
+            features: ["🔋 30000mAh Capacity", "⚡ 25W Fast Charging", "📊 LED Display", "🔌 Dual Input & Output"],
+            type: "mobile"
         },
         {
             id: "ACE-CABLE-120W-001",
@@ -622,7 +812,8 @@
             catClass: "cat-cable",
             images: ["https://i.ibb.co/j99Px1XJ/IMG-20260616-190919.png", "https://i.ibb.co/tPDB63N3/IMG-20260616-191008.png"],
             desc: "120W Super VOOC fast charging cable.",
-            features: ["120W Fast Charging", "Super VOOC Support", "USB-A to Type-C", "Durable & Flexible"]
+            features: ["120W Fast Charging", "Super VOOC Support", "USB-A to Type-C", "Durable & Flexible"],
+            type: "mobile"
         },
         {
             id: "ACE-CABLE-PD-65W-001",
@@ -635,7 +826,8 @@
             catClass: "cat-cable",
             images: ["https://i.ibb.co/HpGvTdqZ/IMG-20260616-232011.png", "https://i.ibb.co/sp3Cxqx8/IMG-20260616-232054.png"],
             desc: "65W PD Type C to Type C fast charging cable.",
-            features: ["65W PD Fast Charging", "Quick Charge 4.0", "Type C to Type C", "Red Braided Design"]
+            features: ["65W PD Fast Charging", "Quick Charge 4.0", "Type C to Type C", "Red Braided Design"],
+            type: "mobile"
         },
         {
             id: "ACE-CABLE-V8-001",
@@ -648,7 +840,8 @@
             catClass: "cat-cable",
             images: ["https://i.ibb.co/d4DqZDG1/IMG-20260616-231336.png", "https://i.ibb.co/JFqqGMHX/IMG-20260616-231508.png"],
             desc: "V8 USB data cable with 30W fast charging.",
-            features: ["30W Fast Charging", "USB-A to V8", "Durable & Flexible", "1 Meter Length"]
+            features: ["30W Fast Charging", "USB-A to V8", "Durable & Flexible", "1 Meter Length"],
+            type: "mobile"
         },
         {
             id: "ACE-CABLE-iPhone-001",
@@ -661,17 +854,18 @@
             catClass: "cat-cable",
             images: ["https://i.ibb.co/Ppr5PnR/IMG-20260616-231601.png", "https://i.ibb.co/NgbLt99k/IMG-20260616-231646.png"],
             desc: "iPhone Lightning USB data cable with fast charging.",
-            features: ["5V-2.5A Fast Charging", "MFi Certified", "iPhone Compatible", "Durable Braided Design"]
+            features: ["5V-2.5A Fast Charging", "MFi Certified", "iPhone Compatible", "Durable Braided Design"],
+            type: "mobile"
         }
     ];
     
     const categoryNames = {
         'all': 'All',
         'charger': 'Chargers',
-        'cable': 'Data Cables',
         'earbuds': 'Earbuds',
         'headphones': 'Headphones',
-        'powerbank': 'Power Banks'
+        'powerbank': 'Power Banks',
+        'cable': 'Data Cables'
     };
     
     let detailCurrentIndex = 0;
@@ -881,6 +1075,7 @@
                 customerPhone: customerPhone, customerAddress: customerAddress,
                 items: itemsList, total: total, paymentMethod: paymentNames[selectedPayment], 
                 utr: utr || "COD", status: "Pending", deliveryOTP: otp,
+                service: currentService,
                 website: "Trust Fix"
             };
             await db.collection("orders").add(orderData);
@@ -890,7 +1085,8 @@
                 order_items: itemsList, order_total: `₹${total}`, 
                 payment_method: paymentNames[selectedPayment], utr_number: utr || "COD", 
                 order_date: new Date().toLocaleString(), order_type: "Product Order", 
-                action_type: "NEW ORDER", delivery_otp: otp 
+                action_type: "NEW ORDER", delivery_otp: otp,
+                service_type: currentService === 'mobile' ? 'Mobile' : 'Laptop'
             };
             await emailjs.send("service_gbou2dl", "template_lp2zf4b", templateParams);
             showToast("✅ Order placed! Delivery OTP: " + otp);
@@ -1073,6 +1269,7 @@
                             <div>
                                 <span class="order-id">🛒 ${item.orderId}</span>
                                 <span class="otp-badge">🔑 OTP: ${item.deliveryOTP || 'N/A'}</span>
+                                ${item.service ? `<span style="font-size:10px; background:#e8eaf6; padding:1px 8px; border-radius:10px; color:#1a237e; margin-left:6px;">${item.service === 'mobile' ? '📱 Mobile' : '💻 Laptop'}</span>` : ''}
                             </div>
                             <span class="order-status ${statusClass}">${item.status || 'Pending'}</span>
                         </div>
@@ -1109,6 +1306,7 @@
                             <div>
                                 <span class="order-id">🔧 ${item.repairId}</span>
                                 <span class="otp-badge">🔑 OTP: ${item.deliveryOTP || 'N/A'}</span>
+                                ${item.service ? `<span style="font-size:10px; background:#e8eaf6; padding:1px 8px; border-radius:10px; color:#1a237e; margin-left:6px;">${item.service === 'mobile' ? '📱 Mobile' : '💻 Laptop'}</span>` : ''}
                             </div>
                             <span class="order-status ${statusClass}">${item.status || 'Pending'}</span>
                         </div>
@@ -1131,19 +1329,17 @@
     }
     
     // ============================================================
-    // ==================== REPAIR FORM (FIXED) ====================
+    // ==================== REPAIR FORM ====================
     // ============================================================
     document.getElementById('repairForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // ===== CHECK LOGIN =====
         if(!currentUser){ 
             showToast("⚠️ Please login first!"); 
             showLoginModal(); 
             return; 
         }
         
-        // ===== GET FORM VALUES =====
         const name = document.getElementById('custName').value.trim();
         const phone = document.getElementById('custPhone').value.trim();
         const address = document.getElementById('custAddress').value.trim();
@@ -1152,7 +1348,6 @@
         const deviceModel = document.getElementById('deviceModel').value.trim();
         const deviceFaults = document.getElementById('deviceFaults').value.trim();
         
-        // ===== VALIDATION =====
         if(!name || !phone || !address || !deviceType || !deviceBrand || !deviceModel || !deviceFaults) { 
             showToast("⚠️ Please fill all fields!"); 
             return; 
@@ -1162,20 +1357,17 @@
             return; 
         }
         
-        // ===== DISABLE BUTTON TO PREVENT DOUBLE CLICK =====
         const btn = document.getElementById('bookNowBtn');
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...';
         
-        // ===== SHOW LOADING =====
         showGlobalLoading(true);
         
         try {
-            // ===== GENERATE REPAIR ID & OTP =====
             const repairId = "REP" + Date.now() + Math.floor(Math.random()*1000);
             const otp = generateOTP();
+            const serviceType = currentService === 'mobile' ? 'Mobile' : 'Laptop';
             
-            // ===== SAVE TO FIREBASE =====
             const repairData = { 
                 repairId, 
                 date: new Date().toISOString(), 
@@ -1190,11 +1382,11 @@
                 deviceFaults, 
                 status: "Pending", 
                 deliveryOTP: otp,
+                service: currentService,
                 website: "Trust Fix"
             };
             await db.collection("repairs").add(repairData);
             
-            // ===== SEND EMAIL =====
             const templateParams = { 
                 to_email: ADMIN_EMAIL, 
                 customer_name: name, 
@@ -1205,18 +1397,18 @@
                 device_model: deviceModel, 
                 device_faults: deviceFaults, 
                 order_date: new Date().toLocaleString(), 
-                order_type: "Repair Booking", 
-                action_type: "NEW REPAIR", 
+                order_type: serviceType + " Repair Booking", 
+                action_type: "NEW REPAIR",
+                service_type: serviceType,
                 delivery_otp: otp 
             };
             await emailjs.send("service_gbou2dl", "template_lp2zf4b", templateParams);
             
-            // ===== SEND NOTIFICATION =====
             try {
                 if ("Notification" in window && Notification.permission === "granted") {
                     if (navigator.serviceWorker && navigator.serviceWorker.ready) {
                         navigator.serviceWorker.ready.then(reg => {
-                            reg.showNotification("🔧 New Repair Booking!", {
+                            reg.showNotification("🔧 New " + serviceType + " Repair Booking!", {
                                 body: `Customer: ${name}\nOTP: ${otp}`,
                                 icon: "https://i.imgur.com/8FkqJpR.jpg"
                             });
@@ -1229,9 +1421,6 @@
                 console.log("Notification not supported:", notifErr);
             }
             
-            // ============================================================
-            // ===== SHOW CONFIRMATION POPUP =====
-            // ============================================================
             showConfirmationPopup({
                 repairId: repairId,
                 otp: otp,
@@ -1244,9 +1433,6 @@
                 deviceFaults: deviceFaults
             });
             
-            // ============================================================
-            // ===== CLEAR FORM =====
-            // ============================================================
             document.getElementById('repairForm').reset();
             document.getElementById('custName').value = '';
             document.getElementById('custPhone').value = '';
@@ -1262,11 +1448,11 @@
         finally { 
             showGlobalLoading(false);
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check-circle"></i> Book Now';
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> <span id="bookBtnText">' + (currentService === 'mobile' ? 'Book Mobile Repair' : 'Book Laptop Repair') + '</span>';
         }
     });
     
-    // ==================== CONFIRMATION POPUP FUNCTIONS ====================
+    // ==================== CONFIRMATION POPUP ====================
     function showConfirmationPopup(data) {
         document.getElementById('popupRepairId').textContent = data.repairId;
         document.getElementById('popupOtp').textContent = data.otp;
@@ -1287,7 +1473,7 @@
         showToast("✅ Booking confirmed! OTP: " + document.getElementById('popupOtp').textContent);
     }
     
-    // ==================== CALL POPUP FUNCTIONS ====================
+    // ==================== CALL POPUP ====================
     function showCallPopup() {
         document.getElementById('callPopup').classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -1298,7 +1484,6 @@
         document.body.style.overflow = 'auto';
     }
     
-    // Click outside to close
     document.getElementById('callPopup').addEventListener('click', function(e) {
         if (e.target === this) {
             closeCallPopup();
@@ -1356,9 +1541,16 @@
         t._timeout = setTimeout(() => t.style.display = 'none', 3000); 
     }
     
+    // ==================== START ====================
+    document.body.classList.remove('laptop-mode');
+    document.getElementById('mobileBtn').classList.add('active');
+    document.getElementById('laptopBtn').classList.remove('active');
+    
     renderCategories();
     renderProducts();
     loadCart();
+    updateCallNumbers('mobile');
+    
     if (Notification.permission === "default") Notification.requestPermission();
     auth.onAuthStateChanged((user) => { if (user) listenForNewBookings(); });
 </script>
