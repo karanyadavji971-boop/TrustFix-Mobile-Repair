@@ -282,6 +282,61 @@
         .confirmation-popup .popup-close:hover{color:#1a237e;}
         .confirmation-popup .popup-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
         .confirmation-popup .popup-row .popup-detail{padding:3px 0;}
+        
+        /* ===== VISITING CHARGES STYLES ===== */
+        .visiting-box {
+            background: #e8f5e9;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin: 12px 0;
+            border: 1px solid #4caf50;
+            animation: fadeIn 0.4s ease;
+            display: none;
+        }
+        .visiting-box.show { display: block; }
+        .visiting-box .charge-amount {
+            font-size: 20px;
+            font-weight: 800;
+            color: #2e7d32;
+        }
+        .visiting-box .charge-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a237e;
+        }
+        .visiting-box .charge-sub {
+            font-size: 12px;
+            color: #555;
+        }
+        .visiting-box .radio-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .visiting-box .radio-group label {
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            background: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            transition: 0.3s;
+        }
+        .visiting-box .radio-group label:hover {
+            border-color: #4caf50;
+        }
+        .visiting-box .radio-group label.active {
+            border-color: #4caf50;
+            background: #e8f5e9;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -336,7 +391,7 @@
             ⚠️ If one number is not responding, please try the other number.
         </div>
         
-        <!-- Number 1 - Mobile Mode: 9711678678, Laptop Mode: 9625513082 -->
+        <!-- Number 1 - Mobile: 9711678678, Laptop: 9625513082 -->
         <a href="tel:9711678678" id="callNumber1" style="text-decoration:none; display:block;">
             <div style="background:#e8f5e9; border:2px solid #4caf50; border-radius:12px; padding:14px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; transition:0.3s;">
                 <div>
@@ -347,7 +402,7 @@
             </div>
         </a>
         
-        <!-- Number 2 - Both Mobile & Laptop: 9267982460 -->
+        <!-- Number 2 - Common: 9267982460 -->
         <a href="tel:9267982460" id="callNumber2" style="text-decoration:none; display:block;">
             <div style="background:#e3f2fd; border:2px solid #1a237e; border-radius:12px; padding:14px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; transition:0.3s;">
                 <div>
@@ -413,6 +468,29 @@
         <div class="form-group"><label><i class="fas fa-user"></i> Name *</label><input type="text" id="custName" placeholder="Enter your full name" required></div>
         <div class="form-group"><label><i class="fas fa-phone"></i> Phone no. *</label><input type="tel" id="custPhone" placeholder="Enter your mobile number" required></div>
         <div class="form-group"><label><i class="fas fa-map-marker-alt"></i> Address *</label><textarea id="custAddress" placeholder="Enter your full address for pickup" rows="2" required></textarea></div>
+        
+        <!-- ===== VISITING CHARGES SECTION (Laptop Only) ===== -->
+        <div class="visiting-box" id="visitingChargesSection">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div>
+                    <span class="charge-label"><i class="fas fa-car"></i> Visiting Charges</span>
+                    <p class="charge-sub"><i class="fas fa-info-circle"></i> Pickup & Drop service available</p>
+                </div>
+                <div style="text-align:right;">
+                    <span class="charge-amount">₹300</span>
+                    <span style="font-size:11px; color:#666; display:block;">(One-time charge)</span>
+                </div>
+            </div>
+            <div class="radio-group">
+                <label class="active" onclick="selectVisiting(this, 'yes')">
+                    <input type="radio" name="visiting" value="yes" checked> ✅ Yes, I need pickup
+                </label>
+                <label onclick="selectVisiting(this, 'no')">
+                    <input type="radio" name="visiting" value="no"> ❌ No, I'll visit store
+                </label>
+            </div>
+        </div>
+        
         <div class="form-row">
             <div class="form-group"><label><i class="fas fa-mobile-alt"></i> <span id="deviceLabel">Select Device</span> *</label>
                 <select id="deviceType">
@@ -622,6 +700,12 @@
     // ==================== SERVICE STATE ====================
     let currentService = 'mobile';
     
+    // ==================== SELECT VISITING ====================
+    function selectVisiting(el, value) {
+        document.querySelectorAll('.visiting-box .radio-group label').forEach(l => l.classList.remove('active'));
+        el.classList.add('active');
+    }
+    
     // ==================== SWITCH SERVICE ====================
     function switchService(service) {
         currentService = service;
@@ -667,6 +751,15 @@
             '<i class="fas fa-shopping-bag"></i> Mobile Accessories' :
             '<i class="fas fa-shopping-bag"></i> Laptop Accessories';
         
+        // ===== SHOW/HIDE VISITING CHARGES =====
+        const visitingSection = document.getElementById('visitingChargesSection');
+        if (service === 'laptop') {
+            visitingSection.classList.add('show');
+        } else {
+            visitingSection.classList.remove('show');
+        }
+        
+        // Show/Hide Products Section
         const productsSection = document.getElementById('productsSection');
         if (service === 'mobile') {
             productsSection.style.display = 'block';
@@ -691,7 +784,6 @@
         const subtitle = document.getElementById('callPopupSubtitle');
         
         if (service === 'mobile') {
-            // Mobile Numbers: 9711678678 and 9267982460
             num1.href = 'tel:9711678678';
             display1.textContent = '9711678678';
             label1.textContent = '📱 Number 1 (Mobile)';
@@ -700,7 +792,6 @@
             label2.textContent = '📱 Number 2 (Mobile)';
             subtitle.textContent = 'Choose a number to call us for Mobile Repair';
         } else {
-            // Laptop Numbers: 9625513082 and 9267982460
             num1.href = 'tel:9625513082';
             display1.textContent = '9625513082';
             label1.textContent = '💻 Number 1 (Laptop)';
@@ -1357,6 +1448,25 @@
             return; 
         }
         
+        // ===== GET VISITING CHARGES (Laptop Only) =====
+        let visitingCharge = 0;
+        let visitingOption = 'No';
+        let visitingText = 'No visiting charges';
+        if (currentService === 'laptop') {
+            const visitingRadios = document.querySelectorAll('input[name="visiting"]');
+            visitingRadios.forEach(r => {
+                if (r.checked) {
+                    visitingOption = r.value === 'yes' ? 'Yes (Pickup Required)' : 'No (Store Visit)';
+                    if (r.value === 'yes') {
+                        visitingCharge = 300;
+                        visitingText = '₹300 (Pickup & Drop Service)';
+                    } else {
+                        visitingText = 'No visiting charges (Store Visit)';
+                    }
+                }
+            });
+        }
+        
         const btn = document.getElementById('bookNowBtn');
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...';
@@ -1383,6 +1493,8 @@
                 status: "Pending", 
                 deliveryOTP: otp,
                 service: currentService,
+                visitingCharge: visitingCharge,
+                visitingOption: visitingOption,
                 website: "Trust Fix"
             };
             await db.collection("repairs").add(repairData);
@@ -1400,7 +1512,9 @@
                 order_type: serviceType + " Repair Booking", 
                 action_type: "NEW REPAIR",
                 service_type: serviceType,
-                delivery_otp: otp 
+                delivery_otp: otp,
+                visiting_charges: visitingText,
+                visiting_option: visitingOption
             };
             await emailjs.send("service_gbou2dl", "template_lp2zf4b", templateParams);
             
@@ -1409,7 +1523,7 @@
                     if (navigator.serviceWorker && navigator.serviceWorker.ready) {
                         navigator.serviceWorker.ready.then(reg => {
                             reg.showNotification("🔧 New " + serviceType + " Repair Booking!", {
-                                body: `Customer: ${name}\nOTP: ${otp}`,
+                                body: `Customer: ${name}\nOTP: ${otp}\nVisiting: ${visitingText}`,
                                 icon: "https://i.imgur.com/8FkqJpR.jpg"
                             });
                         });
@@ -1430,7 +1544,8 @@
                 deviceType: deviceType,
                 deviceBrand: deviceBrand,
                 deviceModel: deviceModel,
-                deviceFaults: deviceFaults
+                deviceFaults: deviceFaults,
+                visitingText: visitingText
             });
             
             document.getElementById('repairForm').reset();
@@ -1441,6 +1556,10 @@
             document.getElementById('deviceBrand').value = '';
             document.getElementById('deviceModel').value = '';
             document.getElementById('deviceFaults').value = '';
+            
+            // Reset visiting charges radio
+            document.querySelectorAll('.visiting-box .radio-group label').forEach(l => l.classList.remove('active'));
+            document.querySelector('.visiting-box .radio-group label:first-child')?.classList.add('active');
             
         } catch(e){ 
             showToast("❌ Error: " + e.message); 
@@ -1462,6 +1581,17 @@
         document.getElementById('popupDevice').textContent = data.deviceType;
         document.getElementById('popupBrand').textContent = data.deviceBrand + ' ' + data.deviceModel;
         document.getElementById('popupIssue').textContent = data.deviceFaults;
+        
+        // Add visiting charges info to popup if laptop
+        if (currentService === 'laptop' && data.visitingText) {
+            const extraInfo = document.createElement('div');
+            extraInfo.className = 'popup-detail';
+            extraInfo.innerHTML = `<span class="label">🚗 Visiting Charges</span><span class="value">${data.visitingText}</span>`;
+            const divider = document.querySelector('.confirmation-popup .popup-divider:last-child');
+            if (divider) {
+                divider.parentNode.insertBefore(extraInfo, divider);
+            }
+        }
         
         document.getElementById('confirmationPopup').classList.add('active');
         document.body.style.overflow = 'hidden';
