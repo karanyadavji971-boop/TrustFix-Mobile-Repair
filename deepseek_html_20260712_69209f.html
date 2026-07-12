@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Trust Fix Mobile Repair</title>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    
+    <!-- EmailJS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f1724; color: #e2e8f0; min-height: 100vh; }
+        
+        /* ===== HEADER ===== */
+        .admin-header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e94560;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .admin-header h1 {
+            font-size: 22px;
+            color: #fff;
+        }
+        .admin-header h1 span { color: #e94560; }
+        .admin-header .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .admin-header .user-badge {
+            background: #e94560;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .admin-header .logout-btn {
+            background: #e94560;
+            border: none;
+            color: white;
+            padding: 8px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .admin-header .logout-btn:hover { background: #c0392b; transform: scale(1.05); }
+        .admin-header .refresh-btn {
+            background: #2d6a4f;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .admin-header .refresh-btn:hover { background: #1b4332; }
+        
+        /* ===== MAIN LAYOUT ===== */
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* ===== STATS GRID ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #1a2236;
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #e94560;
+            text-align: center;
+            transition: 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+        .stat-card .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #fff;
+            margin: 8px 0;
+        }
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-card .stat-icon { font-size: 28px; }
+        .stat-card.blue { border-left-color: #3b82f6; }
+        .stat-card.green { border-left-color: #22c55e; }
+        .stat-card.orange { border-left-color: #f59e0b; }
+        .stat-card.purple { border-left-color: #8b5cf6; }
+        
+        /* ===== TABS ===== */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+        .tab-btn {
+            padding: 10px 22px;
+            background: #1a2236;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            color: #94a3b8;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+        .tab-btn:hover { border-color: #e94560; color: #fff; }
+        .tab-btn.active {
+            background: #e94560;
+            color: #fff;
+            border-color: #e94560;
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* ===== SEARCH & FILTER ===== */
+        .search-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .search-filter input, .search-filter select {
+            padding: 10px 16px;
+            background: #1a2236;
+            border: 1px solid #2a3a5c;
+            border-radius: 10px;
+            color: #e2e8f0;
+            font-size: 14px;
+            flex: 1;
+            min-width: 150px;
+        }
+        .search-filter input:focus, .search-filter select:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .search-filter select option { background: #1a2236; }
+        
+        /* ===== TABLE ===== */
+        .table-container {
+            background: #1a2236;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid #2a3a5c;
+        }
+        .table-wrapper { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        thead {
+            background: #0f1724;
+            border-bottom: 2px solid #2a3a5c;
+        }
+        th {
+            padding: 14px 12px;
+            text-align: left;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #2a3a5c;
+            vertical-align: middle;
+            word-break: break-word;
+        }
+        tr:hover { background: #1e2a42; }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+        .empty-state i { font-size: 40px; margin-bottom: 10px; display: block; }
+        
+        /* ===== BADGES ===== */
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-pending { background: #f59e0b; color: #1a1a2e; }
+        .badge-shipped { background: #3b82f6; color: #fff; }
+        .badge-completed { background: #22c55e; color: #1a1a2e; }
+        .badge-cancelled { background: #ef4444; color: #fff; }
+        .badge-verified { background: #22c55e; color: #1a1a2e; }
+        .badge-unverified { background: #f59e0b; color: #1a1a2e; }
+        
+        /* ===== BUTTONS ===== */
+        .btn-sm {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: 0.3s;
+            margin: 2px;
+        }
+        .btn-sm:hover { transform: scale(1.05); }
+        .btn-primary { background: #3b82f6; color: #fff; }
+        .btn-success { background: #22c55e; color: #fff; }
+        .btn-danger { background: #ef4444; color: #fff; }
+        .btn-warning { background: #f59e0b; color: #1a1a2e; }
+        .btn-info { background: #8b5cf6; color: #fff; }
+        
+        /* ===== OTP HIGHLIGHT ===== */
+        .otp-code {
+            background: #0f1724;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: 2px;
+            color: #22c55e;
+            display: inline-block;
+        }
+        
+        /* ===== MODAL ===== */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a2236;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid #2a3a5c;
+            animation: popIn 0.3s ease;
+        }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-content h3 {
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-content .close-modal {
+            float: right;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .modal-content .close-modal:hover { color: #ef4444; }
+        .modal-content label {
+            display: block;
+            margin: 10px 0 4px;
+            font-weight: 600;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+        .modal-content select, .modal-content textarea {
+            width: 100%;
+            padding: 10px;
+            background: #0f1724;
+            border: 1px solid #2a3a5c;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+        .modal-content select:focus, .modal-content textarea:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .modal-content .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .modal-content .modal-actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            min-width: 100px;
+        }
+        
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a2e;
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 12px;
+            border-left: 4px solid #22c55e;
+            display: none;
+            z-index: 2000;
+            font-size: 14px;
+            max-width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .toast.error { border-left-color: #ef4444; }
+        .toast.success { border-left-color: #22c55e; }
+        
+        /* ===== LOADING ===== */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            color: #94a3b8;
+        }
+        .loading .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #2a3a5c;
+            border-top: 3px solid #e94560;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 12px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .admin-header h1 { font-size: 16px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .tab-btn { padding: 8px 14px; font-size: 12px; }
+            th, td { padding: 8px 6px; font-size: 11px; }
+            .admin-container { padding: 10px; }
+            .modal-content { padding: 20px; }
+        }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .search-filter input, .search-filter select { min-width: 100%; }
+        }
+        
+        /* ===== CUSTOM SCROLLBAR ===== */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f1724; }
+        ::-webkit-scrollbar-thumb { background: #2a3a5c; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #e94560; }
+        
+        /* ===== STATUS UPDATE SECTION ===== */
+        .status-history {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        .status-history .timestamp { color: #64748b; }
+        
+        /* ===== CUSTOMER DETAILS COLLAPSE ===== */
+        .customer-detail-toggle {
+            color: #3b82f6;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 11px;
+        }
+        .customer-detail-toggle:hover { color: #60a5fa; }
+        .customer-details-hidden { display: none; }
+        .customer-details-hidden.show { display: block; }
+        
+        /* ===== ORDER ITEMS PREVIEW ===== */
+        .items-preview {
+            background: #0f1724;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            max-width: 200px;
+            max-height: 60px;
+            overflow-y: auto;
+            color: #94a3b8;
+        }
+        .items-preview .item-line {
+            border-bottom: 1px solid #1a2236;
+            padding: 2px 0;
+        }
+        .items-preview .item-line:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="admin-header">
+    <h1>🔧 <span>Trust Fix</span> Admin Panel</h1>
+    <div class="header-right">
+        <span class="user-badge" id="adminEmail">Admin</span>
+        <button class="refresh-btn" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<div class="admin-container">
+
+    <!-- ===== STATS ===== -->
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card blue">
+            <div class="stat-icon">📦</div>
+            <div class="stat-number" id="totalOrders">0</div>
+            <div class="stat-label">Total Orders</div>
+        </div>
+        <div class="stat-card orange">
+            <div class="stat-icon">🔧</div>
+            <div class="stat-number" id="totalRepairs">0</div>
+            <div class="stat-label">Total Repairs</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-icon">👥</div>
+            <div class="stat-number" id="totalUsers">0</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card purple">
+            <div class="stat-icon">💰</div>
+            <div class="stat-number" id="totalRevenue">₹0</div>
+            <div class="stat-label">Total Revenue</div>
+        </div>
+    </div>
+
+    <!-- ===== TABS ===== -->
+    <div class="tabs" id="tabs">
+        <button class="tab-btn active" data-tab="orders" onclick="switchTab('orders')"><i class="fas fa-box"></i> Orders</button>
+        <button class="tab-btn" data-tab="repairs" onclick="switchTab('repairs')"><i class="fas fa-tools"></i> Repairs</button>
+        <button class="tab-btn" data-tab="users" onclick="switchTab('users')"><i class="fas fa-users"></i> Users</button>
+    </div>
+
+    <!-- ===== TAB: ORDERS ===== -->
+    <div id="tab-orders" class="tab-content active">
+        <div class="search-filter">
+            <input type="text" id="ordersSearch" placeholder="🔍 Search by Order ID, Name, Phone..." oninput="filterOrders()">
+            <select id="ordersStatusFilter" onchange="filterOrders()">
+                <option value="all">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
+        </div>
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>OTP</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <tr><td colspan="9" class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading orders...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TAB: REPAIRS ===== -->
+    <div id="tab-repairs" class="tab-content">
+        <div class="search-filter">
+            <input type="text" id="repairsSearch" placeholder="🔍 Search by Repair ID, Name, Phone..." oninput="filterRepairs()">
+            <select id="repairsStatusFilter" onchange="filterRepairs()">
+                <option value="all">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
+        </div>
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Repair ID</th>
+                            <th>Customer</th>
+                            <th>Device</th>
+                            <th>Issue</th>
+                            <th>OTP</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="repairsTableBody">
+                        <tr><td colspan="8" class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading repairs...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TAB: USERS ===== -->
+    <div id="tab-users" class="tab-content">
+        <div class="search-filter">
+            <input type="text" id="usersSearch" placeholder="🔍 Search by Name, Email..." oninput="filterUsers()">
+        </div>
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Orders</th>
+                            <th>Repairs</th>
+                            <th>Joined</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr><td colspan="6" class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading users...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ===== TOAST ===== -->
+<div id="toast" class="toast"></div>
+
+<!-- ===== MODAL ===== -->
+<div id="actionModal" class="modal">
+    <div class="modal-content">
+        <button class="close-modal" onclick="closeModal()">&times;</button>
+        <h3 id="modalTitle">Update Status</h3>
+        <div id="modalBody"></div>
+        <div class="modal-actions">
+            <button class="btn-sm btn-primary" onclick="confirmAction()"><i class="fas fa-check"></i> Confirm</button>
+            <button class="btn-sm btn-danger" onclick="closeModal()"><i class="fas fa-times"></i> Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ==================== JAVASCRIPT ==================== -->
+<!-- ============================================================ -->
+<script>
+    // ===== FIREBASE CONFIG =====
+    const firebaseConfig = {
+        apiKey: "AIzaSyBUqsrDawGJbX-wgcBFRU4vuaasjt5ZnKQ",
+        authDomain: "discountzone-da33a.firebaseapp.com",
+        projectId: "discountzone-da33a",
+        storageBucket: "discountzone-da33a.firebasestorage.app",
+        messagingSenderId: "171693927426",
+        appId: "1:171693927426:web:02e912a0a8ce86bfb70b1b"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    emailjs.init("EE236Vmj4RMCjX1Dq");
+
+    // ===== STATE =====
+    let allOrders = [];
+    let allRepairs = [];
+    let allUsers = [];
+    let currentModalData = null;
+    let currentModalType = null;
+    let currentModalDocId = null;
+    let adminEmail = "";
+
+    // ===== AUTH =====
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            adminEmail = user.email;
+            document.getElementById('adminEmail').textContent = adminEmail || 'Admin';
+            loadAllData();
+        } else {
+            // Redirect to main site if not logged in as admin
+            window.location.href = 'index.html';
+        }
+    });
+
+    // ===== LOAD ALL DATA =====
+    async function loadAllData() {
+        showToast('🔄 Loading data...', 'info');
+        try {
+            await Promise.all([
+                loadOrders(),
+                loadRepairs(),
+                loadUsers()
+            ]);
+            updateStats();
+            showToast('✅ Data loaded successfully!', 'success');
+        } catch (e) {
+            showToast('❌ Error loading data: ' + e.message, 'error');
+        }
+    }
+
+    // ===== LOAD ORDERS =====
+    async function loadOrders() {
+        const snapshot = await db.collection("orders").orderBy("date", "desc").get();
+        allOrders = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            data.docId = doc.id;
+            allOrders.push(data);
+        });
+        renderOrders();
+    }
+
+    // ===== LOAD REPAIRS =====
+    async function loadRepairs() {
+        const snapshot = await db.collection("repairs").orderBy("date", "desc").get();
+        allRepairs = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            data.docId = doc.id;
+            allRepairs.push(data);
+        });
+        renderRepairs();
+    }
+
+    // ===== LOAD USERS =====
+    async function loadUsers() {
+        // Get unique users from orders and repairs
+        const userMap = new Map();
+        
+        allOrders.forEach(order => {
+            const email = order.customerEmail || '';
+            if (email && !userMap.has(email)) {
+                userMap.set(email, {
+                    email: email,
+                    name: order.customerName || email.split('@')[0],
+                    phone: order.customerPhone || '',
+                    address: order.customerAddress || '',
+                    orders: 0,
+                    repairs: 0,
+                    joined: order.date || new Date().toISOString()
+                });
+            }
+            if (email) {
+                const u = userMap.get(email);
+                if (u) u.orders++;
+            }
+        });
+
+        allRepairs.forEach(repair => {
+            const email = repair.customerEmail || '';
+            if (email && !userMap.has(email)) {
+                userMap.set(email, {
+                    email: email,
+                    name: repair.customerName || email.split('@')[0],
+                    phone: repair.customerPhone || '',
+                    address: repair.customerAddress || '',
+                    orders: 0,
+                    repairs: 0,
+                    joined: repair.date || new Date().toISOString()
+                });
+            }
+            if (email) {
+                const u = userMap.get(email);
+                if (u) u.repairs++;
+            }
+        });
+
+        allUsers = Array.from(userMap.values());
+        renderUsers();
+    }
+
+    // ===== UPDATE STATS =====
+    function updateStats() {
+        const totalOrders = allOrders.length;
+        const totalRepairs = allRepairs.length;
+        const totalUsers = allUsers.length;
+        
+        let revenue = 0;
+        allOrders.forEach(order => {
+            if (order.status !== 'Cancelled' && order.total) {
+                const num = parseFloat(order.total);
+                if (!isNaN(num)) revenue += num;
+            }
+        });
+        
+        document.getElementById('totalOrders').textContent = totalOrders;
+        document.getElementById('totalRepairs').textContent = totalRepairs;
+        document.getElementById('totalUsers').textContent = totalUsers;
+        document.getElementById('totalRevenue').textContent = '₹' + revenue.toFixed(0);
+    }
+
+    // ===== RENDER ORDERS =====
+    function renderOrders() {
+        const tbody = document.getElementById('ordersTableBody');
+        const search = document.getElementById('ordersSearch').value.toLowerCase();
+        const statusFilter = document.getElementById('ordersStatusFilter').value;
+        
+        let filtered = allOrders.filter(order => {
+            const matchSearch = (order.orderId || '').toLowerCase().includes(search) ||
+                               (order.customerName || '').toLowerCase().includes(search) ||
+                               (order.customerPhone || '').includes(search) ||
+                               (order.customerEmail || '').toLowerCase().includes(search);
+            const matchStatus = statusFilter === 'all' || order.status === statusFilter;
+            return matchSearch && matchStatus;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="empty-state"><i class="fas fa-inbox"></i> No orders found</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(order => {
+            const statusClass = getStatusClass(order.status);
+            const itemsHtml = order.items ? order.items.split('\n').filter(l => l.trim()).slice(0, 2).map(l => 
+                `<div class="item-line">${l.trim()}</div>`
+            ).join('') + (order.items.split('\n').filter(l => l.trim()).length > 2 ? `<div class="item-line">...</div>` : '') : 'No items';
+            
+            return `
+            <tr>
+                <td><strong>${order.orderId || order.docId || 'N/A'}</strong></td>
+                <td>
+                    <div><strong>${order.customerName || 'N/A'}</strong></div>
+                    <div style="font-size:11px; color:#94a3b8;">${order.customerPhone || ''}</div>
+                    <div style="font-size:11px; color:#64748b;">${order.customerEmail || ''}</div>
+                </td>
+                <td>
+                    <div class="items-preview">${itemsHtml}</div>
+                </td>
+                <td><strong>₹${order.total || 0}</strong></td>
+                <td style="font-size:11px;">${order.paymentMethod || 'N/A'}</td>
+                <td><span class="otp-code">${order.deliveryOTP || 'N/A'}</span></td>
+                <td><span class="badge ${statusClass}">${order.status || 'Pending'}</span></td>
+                <td style="font-size:11px; color:#94a3b8;">${formatDate(order.date)}</td>
+                <td>
+                    <button class="btn-sm btn-primary" onclick="openStatusModal('order', '${order.docId}', '${order.status || 'Pending'}')"><i class="fas fa-edit"></i></button>
+                    ${order.status !== 'Cancelled' ? `<button class="btn-sm btn-danger" onclick="cancelItem('order', '${order.docId}', '${order.customerName || 'Customer'}')"><i class="fas fa-times"></i></button>` : ''}
+                </td>
+            </tr>
+        `}).join('');
+    }
+
+    // ===== RENDER REPAIRS =====
+    function renderRepairs() {
+        const tbody = document.getElementById('repairsTableBody');
+        const search = document.getElementById('repairsSearch').value.toLowerCase();
+        const statusFilter = document.getElementById('repairsStatusFilter').value;
+        
+        let filtered = allRepairs.filter(repair => {
+            const matchSearch = (repair.repairId || '').toLowerCase().includes(search) ||
+                               (repair.customerName || '').toLowerCase().includes(search) ||
+                               (repair.customerPhone || '').includes(search) ||
+                               (repair.customerEmail || '').toLowerCase().includes(search);
+            const matchStatus = statusFilter === 'all' || repair.status === statusFilter;
+            return matchSearch && matchStatus;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="empty-state"><i class="fas fa-inbox"></i> No repairs found</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(repair => {
+            const statusClass = getStatusClass(repair.status);
+            return `
+            <tr>
+                <td><strong>${repair.repairId || repair.docId || 'N/A'}</strong></td>
+                <td>
+                    <div><strong>${repair.customerName || 'N/A'}</strong></div>
+                    <div style="font-size:11px; color:#94a3b8;">${repair.customerPhone || ''}</div>
+                    <div style="font-size:11px; color:#64748b;">${repair.customerEmail || ''}</div>
+                </td>
+                <td>
+                    <div><strong>${repair.deviceBrand || ''} ${repair.deviceModel || ''}</strong></div>
+                    <div style="font-size:11px; color:#94a3b8;">${repair.deviceType || ''}</div>
+                </td>
+                <td style="font-size:12px; max-width:150px; word-break:break-word;">${repair.deviceFaults || 'N/A'}</td>
+                <td><span class="otp-code">${repair.deliveryOTP || 'N/A'}</span></td>
+                <td><span class="badge ${statusClass}">${repair.status || 'Pending'}</span></td>
+                <td style="font-size:11px; color:#94a3b8;">${formatDate(repair.date)}</td>
+                <td>
+                    <button class="btn-sm btn-primary" onclick="openStatusModal('repair', '${repair.docId}', '${repair.status || 'Pending'}')"><i class="fas fa-edit"></i></button>
+                    ${repair.status !== 'Cancelled' ? `<button class="btn-sm btn-danger" onclick="cancelItem('repair', '${repair.docId}', '${repair.customerName || 'Customer'}')"><i class="fas fa-times"></i></button>` : ''}
+                </td>
+            </tr>
+        `}).join('');
+    }
+
+    // ===== RENDER USERS =====
+    function renderUsers() {
+        const tbody = document.getElementById('usersTableBody');
+        const search = document.getElementById('usersSearch').value.toLowerCase();
+        
+        let filtered = allUsers.filter(user => {
+            return (user.name || '').toLowerCase().includes(search) ||
+                   (user.email || '').toLowerCase().includes(search);
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><i class="fas fa-inbox"></i> No users found</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(user => {
+            return `
+            <tr>
+                <td><strong>${user.name || 'N/A'}</strong></td>
+                <td>${user.email || 'N/A'}</td>
+                <td>${user.orders || 0}</td>
+                <td>${user.repairs || 0}</td>
+                <td style="font-size:11px; color:#94a3b8;">${formatDate(user.joined)}</td>
+                <td><span class="badge badge-verified">Active</span></td>
+            </tr>
+        `}).join('');
+    }
+
+    // ===== FILTER FUNCTIONS =====
+    function filterOrders() { renderOrders(); }
+    function filterRepairs() { renderRepairs(); }
+    function filterUsers() { renderUsers(); }
+
+    // ===== TAB SWITCH =====
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + tab).classList.add('active');
+        document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+    }
+
+    // ===== STATUS MODAL =====
+    function openStatusModal(type, docId, currentStatus) {
+        currentModalType = type;
+        currentModalDocId = docId;
+        
+        const statusOptions = type === 'order' 
+            ? ['Pending', 'Shipped', 'Completed', 'Cancelled']
+            : ['Pending', 'In Progress', 'Completed', 'Cancelled'];
+        
+        document.getElementById('modalTitle').textContent = `Update ${type === 'order' ? 'Order' : 'Repair'} Status`;
+        document.getElementById('modalBody').innerHTML = `
+            <label>Current Status: <strong>${currentStatus}</strong></label>
+            <label>New Status:</label>
+            <select id="newStatusSelect">
+                ${statusOptions.map(s => `<option value="${s}" ${s === currentStatus ? 'selected' : ''}>${s}</option>`).join('')}
+            </select>
+            <label>Optional Note:</label>
+            <textarea id="statusNote" placeholder="Add a note (optional)" rows="2"></textarea>
+        `;
+        document.getElementById('actionModal').classList.add('active');
+    }
+
+    // ===== CONFIRM ACTION =====
+    async function confirmAction() {
+        const newStatus = document.getElementById('newStatusSelect').value;
+        const note = document.getElementById('statusNote').value.trim();
+        
+        if (!newStatus) {
+            showToast('Please select a status', 'error');
+            return;
+        }
+
+        closeModal();
+        showToast('🔄 Updating...', 'info');
+        
+        try {
+            const collection = currentModalType === 'order' ? 'orders' : 'repairs';
+            const docRef = db.collection(collection).doc(currentModalDocId);
+            const doc = await docRef.get();
+            const data = doc.data();
+            
+            await docRef.update({
+                status: newStatus,
+                updatedAt: new Date().toISOString(),
+                statusNote: note || '',
+                lastUpdatedBy: adminEmail
+            });
+
+            // Send email notification
+            try {
+                const templateParams = {
+                    to_email: data.customerEmail || '',
+                    customer_name: data.customerName || 'Customer',
+                    customer_phone: data.customerPhone || 'N/A',
+                    customer_address: data.customerAddress || 'N/A',
+                    order_items: data.items || 'N/A',
+                    order_total: data.total || 'N/A',
+                    payment_method: data.paymentMethod || 'N/A',
+                    utr_number: data.utr || 'COD',
+                    order_date: new Date().toLocaleString(),
+                    order_type: currentModalType === 'order' ? 'Product Order' : 'Repair Booking',
+                    action_type: `STATUS UPDATED TO ${newStatus}`,
+                    delivery_otp: data.deliveryOTP || 'N/A',
+                    status_note: note || 'No note'
+                };
+                await emailjs.send("service_gbou2dl", "template_lp2zf4b", templateParams);
+            } catch(emailErr) {
+                console.log('Email error:', emailErr);
+            }
+
+            showToast(`✅ Status updated to ${newStatus}!`, 'success');
+            refreshData();
+            
+        } catch (e) {
+            showToast('❌ Error: ' + e.message, 'error');
+        }
+    }
+
+    // ===== CANCEL ITEM =====
+    function cancelItem(type, docId, customerName) {
+        if (!confirm(`⚠️ Are you sure you want to cancel this ${type} for ${customerName}?`)) return;
+        
+        showToast('🔄 Cancelling...', 'info');
+        
+        const collection = type === 'order' ? 'orders' : 'repairs';
+        db.collection(collection).doc(docId).update({
+            status: 'Cancelled',
+            cancelledAt: new Date().toISOString(),
+            cancelledBy: 'Admin',
+            cancelledByEmail: adminEmail
+        }).then(() => {
+            showToast('✅ Item cancelled successfully!', 'success');
+            refreshData();
+        }).catch(e => {
+            showToast('❌ Error: ' + e.message, 'error');
+        });
+    }
+
+    // ===== MODAL CONTROLS =====
+    function closeModal() {
+        document.getElementById('actionModal').classList.remove('active');
+        currentModalData = null;
+        currentModalType = null;
+        currentModalDocId = null;
+    }
+
+    // ===== REFRESH =====
+    function refreshData() {
+        showToast('🔄 Refreshing...', 'info');
+        loadAllData();
+    }
+
+    // ===== LOGOUT =====
+    function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            auth.signOut();
+            window.location.href = 'index.html';
+        }
+    }
+
+    // ===== HELPER FUNCTIONS =====
+    function getStatusClass(status) {
+        const map = {
+            'Pending': 'badge-pending',
+            'Shipped': 'badge-shipped',
+            'Completed': 'badge-completed',
+            'Cancelled': 'badge-cancelled',
+            'In Progress': 'badge-shipped'
+        };
+        return map[status] || 'badge-pending';
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return 'N/A';
+        try {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        } catch {
+            return dateStr;
+        }
+    }
+
+    // ===== TOAST =====
+    function showToast(msg, type = 'info') {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.className = 'toast';
+        if (type === 'error') toast.classList.add('error');
+        else if (type === 'success') toast.classList.add('success');
+        toast.style.display = 'block';
+        clearTimeout(toast._timeout);
+        toast._timeout = setTimeout(() => {
+            toast.style.display = 'none';
+        }, 4000);
+    }
+
+    // ===== REAL-TIME LISTENERS =====
+    function setupListeners() {
+        // Orders listener
+        db.collection("orders").orderBy("date", "desc").onSnapshot((snapshot) => {
+            allOrders = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                data.docId = doc.id;
+                allOrders.push(data);
+            });
+            if (document.getElementById('tab-orders').classList.contains('active')) {
+                renderOrders();
+            }
+            updateStats();
+        }, (err) => console.log('Orders listener error:', err));
+
+        // Repairs listener
+        db.collection("repairs").orderBy("date", "desc").onSnapshot((snapshot) => {
+            allRepairs = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                data.docId = doc.id;
+                allRepairs.push(data);
+            });
+            if (document.getElementById('tab-repairs').classList.contains('active')) {
+                renderRepairs();
+            }
+            updateStats();
+        }, (err) => console.log('Repairs listener error:', err));
+    }
+
+    // ===== INIT =====
+    // Auto-refresh every 60 seconds
+    setInterval(() => {
+        refreshData();
+    }, 60000);
+
+    // Click outside modal to close
+    document.getElementById('actionModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    // Start real-time listeners after initial load
+    setTimeout(setupListeners, 2000);
+</script>
+
+</body>
+</html>
