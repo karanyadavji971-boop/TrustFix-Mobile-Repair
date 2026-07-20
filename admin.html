@@ -3,560 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Trust Fix Mobile Repair</title>
-    
+    <title>Trust Fix Admin Panel</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f1724; color: #e2e8f0; min-height: 100vh; }
-        
-        .admin-header {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            padding: 15px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #e94560;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            flex-wrap: wrap;
-            gap: 10px;
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',Roboto,sans-serif;background:#f0f4f0;color:#1a1a1a;}
+
+        /* Header */
+        .admin-header{background:#1a237e;color:white;padding:15px 25px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:100;}
+        .admin-header h1{font-size:22px;}
+        .admin-header .brand-trust{color:#ff6b35;}
+        .admin-header .brand-fix{color:white;}
+        .admin-header-right{display:flex;align-items:center;gap:15px;}
+        .admin-user{background:#283593;padding:8px 15px;border-radius:25px;font-size:13px;}
+        .logout-btn{background:#ff6b35;color:white;border:none;padding:8px 18px;border-radius:25px;cursor:pointer;font-weight:bold;font-size:13px;}
+        .logout-btn:hover{background:#e55a2b;}
+
+        /* Navigation Tabs */
+        .nav-tabs{display:flex;flex-wrap:wrap;gap:5px;background:white;padding:10px 20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);position:sticky;top:70px;z-index:99;}
+        .nav-tab{padding:10px 20px;border:none;background:#f0f4f0;cursor:pointer;border-radius:25px;font-weight:600;font-size:13px;transition:0.3s;}
+        .nav-tab.active{background:#1a237e;color:white;}
+        .nav-tab:hover:not(.active){background:#e0e0e0;}
+        .badge-count{background:#ff4444;color:white;padding:2px 8px;border-radius:15px;font-size:10px;margin-left:5px;}
+
+        /* Main Content */
+        .main-content{max-width:1400px;margin:20px auto;padding:0 20px;}
+
+        /* Stats Cards */
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:25px;}
+        .stat-card{background:white;padding:20px;border-radius:15px;box-shadow:0 2px 10px rgba(0,0,0,0.05);text-align:center;}
+        .stat-card .stat-icon{font-size:35px;margin-bottom:8px;}
+        .stat-card .stat-number{font-size:28px;font-weight:bold;color:#1a237e;}
+        .stat-card .stat-label{font-size:12px;color:#666;margin-top:4px;}
+
+        /* Table Container */
+        .table-container{background:white;border-radius:15px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);overflow-x:auto;margin-bottom:25px;}
+        .table-container h2{color:#1a237e;margin-bottom:15px;font-size:20px;}
+        table{width:100%;border-collapse:collapse;font-size:13px;}
+        th{background:#1a237e;color:white;padding:12px 10px;text-align:left;font-size:12px;}
+        td{padding:10px;border-bottom:1px solid #eee;}
+        tr:hover{background:#f8f9fa;}
+
+        /* Status Badges */
+        .status-badge{padding:4px 12px;border-radius:20px;font-size:10px;font-weight:bold;display:inline-block;}
+        .status-pending{background:#fff3e0;color:#e65100;}
+        .status-shipped{background:#e3f2fd;color:#0d47a1;}
+        .status-completed{background:#e8f5e9;color:#1b5e20;}
+        .status-cancelled{background:#ffebee;color:#b71c1c;}
+
+        /* Action Buttons */
+        .action-btn{padding:5px 12px;border:none;border-radius:15px;cursor:pointer;font-size:11px;font-weight:bold;margin:2px;transition:0.2s;}
+        .btn-ship{background:#2196f3;color:white;}
+        .btn-ship:hover{background:#1976d2;}
+        .btn-complete{background:#4caf50;color:white;}
+        .btn-complete:hover{background:#388e3c;}
+        .btn-cancel{background:#e74c3c;color:white;}
+        .btn-cancel:hover{background:#c0392b;}
+        .btn-view{background:#ff9800;color:white;}
+        .btn-view:hover{background:#f57c00;}
+        .btn-chat{background:#1a237e;color:white;}
+        .btn-chat:hover{background:#283593;}
+
+        /* OTP Display */
+        .otp-display{font-family:monospace;font-size:16px;font-weight:bold;color:#1a237e;background:#e8f5e9;padding:4px 10px;border-radius:8px;border:2px dashed #4caf50;letter-spacing:2px;}
+
+        /* Modal */
+        .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;z-index:1000;}
+        .modal-overlay.active{display:flex;}
+        .modal-box{background:white;border-radius:20px;padding:25px;width:95%;max-width:600px;max-height:85vh;overflow-y:auto;position:relative;}
+        .modal-box .close-modal{position:absolute;top:12px;right:15px;font-size:22px;cursor:pointer;background:#e74c3c;color:white;width:30px;height:30px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;}
+        .modal-box h3{color:#1a237e;margin-bottom:15px;}
+        .detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px;}
+        .detail-row .label{font-weight:600;color:#666;}
+        .detail-row .value{text-align:right;color:#1a1a1a;max-width:60%;word-break:break-word;}
+
+        /* Chat Modal */
+        .chat-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;z-index:1001;}
+        .chat-modal-overlay.active{display:flex;}
+        .chat-modal-box{background:white;border-radius:20px;width:95%;max-width:500px;height:550px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+        .chat-modal-header{background:#1a237e;color:white;padding:12px 15px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+        .chat-modal-header h4{font-size:14px;}
+        .chat-modal-header button{background:none;border:none;color:white;font-size:20px;cursor:pointer;}
+        .chat-modal-body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f5f7fb;min-height:0;}
+        .chat-modal-body .msg{max-width:80%;padding:10px 14px;border-radius:18px;font-size:13px;line-height:1.5;word-break:break-word;}
+        .chat-modal-body .msg.customer{background:#e8eaf6;color:#1a1a1a;align-self:flex-start;border-bottom-left-radius:4px;}
+        .chat-modal-body .msg.admin{background:#1a237e;color:white;align-self:flex-end;border-bottom-right-radius:4px;}
+        .chat-modal-body .msg .time{font-size:9px;opacity:0.7;display:block;margin-top:4px;text-align:right;}
+        .chat-modal-body .msg .sender{font-size:10px;font-weight:bold;display:block;margin-bottom:3px;}
+        .chat-modal-footer{display:flex;padding:10px;background:white;border-top:1px solid #ddd;gap:8px;flex-shrink:0;}
+        .chat-modal-footer input{flex:1;padding:10px 14px;border:1px solid #ddd;border-radius:25px;font-size:13px;outline:none;}
+        .chat-modal-footer button{background:#1a237e;color:white;border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;font-size:16px;flex-shrink:0;}
+
+        /* Toast */
+        .toast{position:fixed;bottom:20px;left:20px;right:20px;background:#1a1a2e;color:white;padding:12px;border-radius:10px;text-align:center;display:none;z-index:2000;font-size:14px;max-width:500px;margin:0 auto;}
+
+        /* Loading */
+        .loading{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;z-index:2000;flex-direction:column;}
+        .loading.active{display:flex;}
+        .loading .spinner{width:40px;height:40px;border:4px solid #f3f3f3;border-top:4px solid #1a237e;border-radius:50%;animation:spin 0.8s linear infinite;}
+        .loading p{color:white;margin-top:10px;}
+        @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+        /* Notification Bar */
+        .notification-bar{background:#fff3e0;border:1px solid #ff9800;padding:10px 20px;margin:10px 20px;border-radius:10px;display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;}
+        .notification-bar .pulse-dot{width:10px;height:10px;background:#ff4444;border-radius:50%;animation:badge-pulse 1.5s infinite;}
+        @keyframes badge-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.5);}}
+
+        /* Responsive */
+        @media(max-width:768px){
+            .admin-header h1{font-size:16px;}
+            .nav-tab{padding:8px 12px;font-size:11px;}
+            table{font-size:11px;}
+            th,td{padding:8px 5px;}
         }
-        .admin-header h1 { font-size: 22px; color: #fff; }
-        .admin-header h1 span { color: #e94560; }
-        .admin-header .header-right { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-        .admin-header .user-badge { background: #e94560; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .admin-header .logout-btn, .admin-header .refresh-btn {
-            padding: 8px 18px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.3s;
-            color: white;
-        }
-        .admin-header .logout-btn { background: #e94560; }
-        .admin-header .logout-btn:hover { background: #c0392b; }
-        .admin-header .refresh-btn { background: #2d6a4f; }
-        .admin-header .refresh-btn:hover { background: #1b4332; }
-        
-        .admin-container { max-width: 1600px; margin: 0 auto; padding: 20px; }
-        
-        /* ===== LOGIN SCREEN ===== */
-        .login-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0f1724, #1a1a2e);
-            padding: 20px;
-        }
-        .login-box {
-            background: #1a2236;
-            padding: 40px;
-            border-radius: 20px;
-            border: 1px solid #2a3a5c;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-        }
-        .login-box h2 {
-            text-align: center;
-            color: #fff;
-            margin-bottom: 10px;
-        }
-        .login-box h2 span { color: #e94560; }
-        .login-box p { text-align: center; color: #94a3b8; font-size: 14px; margin-bottom: 25px; }
-        .login-box input {
-            width: 100%;
-            padding: 12px 16px;
-            margin-bottom: 12px;
-            background: #0f1724;
-            border: 1px solid #2a3a5c;
-            border-radius: 10px;
-            color: #e2e8f0;
-            font-size: 14px;
-        }
-        .login-box input:focus { outline: none; border-color: #e94560; }
-        .login-box .login-btn {
-            width: 100%;
-            padding: 14px;
-            background: #e94560;
-            border: none;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .login-box .login-btn:hover { background: #c0392b; transform: scale(1.02); }
-        .login-box .login-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .login-box .error-msg { color: #ef4444; font-size: 13px; text-align: center; margin-top: 10px; display: none; }
-        .login-box .google-btn {
-            width: 100%;
-            padding: 12px;
-            background: #4285f4;
-            border: none;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 8px;
-        }
-        .login-box .google-btn:hover { background: #3367d6; }
-        .login-box .divider {
-            text-align: center;
-            color: #94a3b8;
-            margin: 12px 0;
-            font-size: 13px;
-            position: relative;
-        }
-        .login-box .divider::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            width: 42%;
-            height: 1px;
-            background: #2a3a5c;
-        }
-        .login-box .divider::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 50%;
-            width: 42%;
-            height: 1px;
-            background: #2a3a5c;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 18px;
-            margin-bottom: 30px;
-        }
-        .stat-card {
-            background: #1a2236;
-            padding: 20px;
-            border-radius: 15px;
-            border-left: 4px solid #e94560;
-            text-align: center;
-            transition: 0.3s;
-        }
-        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
-        .stat-card .stat-number { font-size: 32px; font-weight: 700; color: #fff; margin: 8px 0; }
-        .stat-card .stat-label { font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-card .stat-icon { font-size: 28px; }
-        .stat-card.blue { border-left-color: #3b82f6; }
-        .stat-card.green { border-left-color: #22c55e; }
-        .stat-card.orange { border-left-color: #f59e0b; }
-        .stat-card.purple { border-left-color: #8b5cf6; }
-        
-        .tabs {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 25px;
-        }
-        .tab-btn {
-            padding: 10px 22px;
-            background: #1a2236;
-            border: 2px solid transparent;
-            border-radius: 10px;
-            color: #94a3b8;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: 0.3s;
-        }
-        .tab-btn:hover { border-color: #e94560; color: #fff; }
-        .tab-btn.active { background: #e94560; color: #fff; border-color: #e94560; }
-        .tab-content { display: none; animation: fadeIn 0.3s ease; }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .search-filter {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 20px;
-            align-items: center;
-        }
-        .search-filter input, .search-filter select {
-            padding: 10px 16px;
-            background: #1a2236;
-            border: 1px solid #2a3a5c;
-            border-radius: 10px;
-            color: #e2e8f0;
-            font-size: 14px;
-            flex: 1;
-            min-width: 150px;
-        }
-        .search-filter input:focus, .search-filter select:focus { outline: none; border-color: #e94560; }
-        .search-filter select option { background: #1a2236; }
-        
-        .card-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 20px;
-        }
-        
-        .order-card, .repair-card {
-            background: #1a2236;
-            border-radius: 15px;
-            border: 1px solid #2a3a5c;
-            overflow: hidden;
-            transition: 0.3s;
-        }
-        .order-card:hover, .repair-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
-        
-        .card-header {
-            padding: 15px 18px;
-            background: #0f1724;
-            border-bottom: 2px solid #2a3a5c;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .card-header .card-id { font-weight: 700; font-size: 15px; color: #fff; }
-        .card-header .card-id .badge { font-size: 10px; padding: 2px 10px; border-radius: 20px; margin-left: 8px; }
-        .card-header .card-date { font-size: 11px; color: #94a3b8; }
-        
-        .card-body { padding: 15px 18px; }
-        .card-body .customer-section {
-            background: #0f1724;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 12px;
-        }
-        .card-body .customer-section .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
-        .card-body .customer-section .value { font-size: 14px; font-weight: 500; color: #fff; }
-        
-        .card-body .items-section {
-            background: #0f1724;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 12px;
-        }
-        .card-body .items-section .item-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0;
-            border-bottom: 1px solid #1a2236;
-        }
-        .card-body .items-section .item-row:last-child { border-bottom: none; }
-        .card-body .items-section .item-name { font-size: 13px; color: #e2e8f0; }
-        .card-body .items-section .item-price { font-size: 13px; font-weight: 600; color: #22c55e; }
-        .card-body .items-section .item-qty { font-size: 12px; color: #94a3b8; }
-        
-        .card-body .details-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-        .card-body .details-grid .detail-item {
-            background: #0f1724;
-            padding: 8px 12px;
-            border-radius: 8px;
-        }
-        .card-body .details-grid .detail-item .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; }
-        .card-body .details-grid .detail-item .value { font-size: 13px; font-weight: 500; color: #fff; }
-        
-        .card-footer {
-            padding: 12px 18px;
-            background: #0f1724;
-            border-top: 1px solid #2a3a5c;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .card-footer .otp {
-            background: #0f1724;
-            padding: 4px 14px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 18px;
-            font-weight: 700;
-            color: #22c55e;
-            letter-spacing: 2px;
-            border: 1px dashed #22c55e;
-        }
-        .card-footer .total { font-size: 18px; font-weight: 700; color: #f59e0b; }
-        .card-footer .actions { display: flex; gap: 6px; flex-wrap: wrap; }
-        .card-footer .actions button {
-            padding: 5px 14px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 600;
-            transition: 0.3s;
-            color: white;
-        }
-        .card-footer .actions button:hover { transform: scale(1.05); }
-        .btn-primary { background: #3b82f6; }
-        .btn-success { background: #22c55e; }
-        .btn-danger { background: #ef4444; }
-        .btn-warning { background: #f59e0b; color: #1a1a2e !important; }
-        
-        .badge-pending { background: #f59e0b; color: #1a1a2e; }
-        .badge-shipped { background: #3b82f6; color: #fff; }
-        .badge-completed { background: #22c55e; color: #1a1a2e; }
-        .badge-cancelled { background: #ef4444; color: #fff; }
-        .badge-inprogress { background: #8b5cf6; color: #fff; }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #94a3b8;
-            grid-column: 1 / -1;
-        }
-        .empty-state i { font-size: 40px; margin-bottom: 10px; display: block; }
-        
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1a1a2e;
-            color: #fff;
-            padding: 14px 28px;
-            border-radius: 12px;
-            border-left: 4px solid #22c55e;
-            display: none;
-            z-index: 2000;
-            font-size: 14px;
-            max-width: 90%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        }
-        .toast.error { border-left-color: #ef4444; }
-        .toast.success { border-left-color: #22c55e; }
-        
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(5px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: #1a2236;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            border: 1px solid #2a3a5c;
-            animation: popIn 0.3s ease;
-        }
-        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal-content h3 { color: #fff; margin-bottom: 15px; font-size: 20px; }
-        .modal-content .close-modal {
-            float: right;
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        .modal-content .close-modal:hover { color: #ef4444; }
-        .modal-content label { display: block; margin: 10px 0 4px; font-weight: 600; color: #94a3b8; font-size: 13px; }
-        .modal-content select, .modal-content textarea {
-            width: 100%;
-            padding: 10px;
-            background: #0f1724;
-            border: 1px solid #2a3a5c;
-            border-radius: 8px;
-            color: #e2e8f0;
-            font-size: 14px;
-        }
-        .modal-content .modal-actions { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        .modal-content .modal-actions button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; min-width: 100px; color: white; }
-        
-        .loading { display: flex; justify-content: center; align-items: center; padding: 30px; color: #94a3b8; grid-column: 1 / -1; }
-        .loading .spinner {
-            width: 30px; height: 30px;
-            border: 3px solid #2a3a5c; border-top: 3px solid #e94560;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: 12px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        @media (max-width: 768px) {
-            .admin-header h1 { font-size: 16px; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .card-container { grid-template-columns: 1fr; }
-            .card-body .details-grid { grid-template-columns: 1fr; }
-            .tab-btn { padding: 8px 14px; font-size: 12px; }
-            .login-box { padding: 25px; }
-        }
-        @media (max-width: 480px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            .search-filter input, .search-filter select { min-width: 100%; }
-        }
-        
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0f1724; }
-        ::-webkit-scrollbar-thumb { background: #2a3a5c; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #e94560; }
-        
-        /* Hide main content initially */
-        #mainContent { display: none; }
-        #mainContent.visible { display: block; }
+
+        /* Login Screen */
+        .login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#1a237e;display:flex;justify-content:center;align-items:center;z-index:3000;}
+        .login-box{background:white;padding:30px;border-radius:20px;width:90%;max-width:400px;text-align:center;}
+        .login-box h2{color:#1a237e;margin-bottom:20px;}
+        .login-box input{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:10px;font-size:14px;}
+        .login-box button{background:#1a237e;color:white;border:none;padding:12px;border-radius:10px;width:100%;font-size:15px;font-weight:bold;cursor:pointer;margin-top:10px;}
+        .login-box .error{color:#e74c3c;font-size:12px;margin-top:8px;display:none;}
+
+        /* Customer list for chat */
+        .customer-chat-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:15px;}
+        .customer-chat-card{background:white;border-radius:15px;padding:15px;box-shadow:0 2px 10px rgba(0,0,0,0.05);cursor:pointer;transition:0.3s;border-left:4px solid #1a237e;}
+        .customer-chat-card:hover{transform:translateY(-3px);box-shadow:0 5px 20px rgba(0,0,0,0.1);}
+        .customer-chat-card .cust-name{font-weight:bold;font-size:15px;color:#1a237e;}
+        .customer-chat-card .cust-email{font-size:12px;color:#666;}
+        .customer-chat-card .last-msg{font-size:12px;color:#999;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .customer-chat-card .unread-dot{display:inline-block;width:8px;height:8px;background:#ff4444;border-radius:50%;margin-left:5px;}
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
 <!-- ===== LOGIN SCREEN ===== -->
 <div id="loginScreen" class="login-screen">
     <div class="login-box">
-        <h2>🔧 <span>Trust Fix</span> Admin</h2>
-        <p>Login to manage orders & repairs</p>
-        
-        <input type="email" id="adminEmailInput" placeholder="Email Address">
-        <input type="password" id="adminPasswordInput" placeholder="Password">
-        
-        <button class="login-btn" id="loginBtn" onclick="adminLogin()">
-            <i class="fas fa-sign-in-alt"></i> Login
-        </button>
-        
-        <div class="divider">OR</div>
-        
-        <button class="google-btn" onclick="adminGoogleLogin()">
-            <i class="fab fa-google"></i> Sign in with Google
-        </button>
-        
-        <div id="loginError" class="error-msg"></div>
-        
-        <p style="text-align:center; margin-top:15px; font-size:12px; color:#64748b;">
-            <i class="fas fa-info-circle"></i> Use admin email: <strong>abhishekbainsla363@gmail.com</strong>
-        </p>
+        <i class="fas fa-tools" style="font-size:50px;color:#1a237e;"></i>
+        <h2>Admin Login</h2>
+        <p style="color:#666;margin-bottom:15px;">Trust Fix Mobile Repair</p>
+        <input type="email" id="adminEmail" placeholder="Admin Email">
+        <input type="password" id="adminPassword" placeholder="Password">
+        <p id="loginError" class="error">Invalid credentials!</p>
+        <button onclick="adminLogin()"><i class="fas fa-lock-open"></i> Login</button>
     </div>
 </div>
 
-<!-- ===== MAIN ADMIN CONTENT ===== -->
-<div id="mainContent">
-
-    <!-- HEADER -->
-    <header class="admin-header">
-        <h1>🔧 <span>Trust Fix</span> Admin Panel</h1>
-        <div class="header-right">
-            <span class="user-badge" id="adminEmail">Admin</span>
-            <button class="refresh-btn" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+<!-- ===== HEADER ===== -->
+<div id="adminPanel" style="display:none;">
+    <div class="admin-header">
+        <div>
+            <h1><i class="fas fa-tools"></i> <span class="brand-trust">Trust</span> <span class="brand-fix">Fix</span> Admin Panel</h1>
+        </div>
+        <div class="admin-header-right">
+            <span class="admin-user"><i class="fas fa-user-shield"></i> <span id="adminName">Admin</span></span>
             <button class="logout-btn" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
-    </header>
+    </div>
 
-    <!-- MAIN -->
-    <div class="admin-container">
+    <!-- Notification Bar -->
+    <div id="notificationBar" class="notification-bar" style="display:none;" onclick="switchTab('chat')">
+        <span class="pulse-dot"></span>
+        <span>🔔 <strong id="notificationText">New messages!</strong> - Click to view</span>
+    </div>
 
-        <!-- STATS -->
-        <div class="stats-grid" id="statsGrid">
-            <div class="stat-card blue"><div class="stat-icon">📦</div><div class="stat-number" id="totalOrders">0</div><div class="stat-label">Total Orders</div></div>
-            <div class="stat-card orange"><div class="stat-icon">🔧</div><div class="stat-number" id="totalRepairs">0</div><div class="stat-label">Total Repairs</div></div>
-            <div class="stat-card green"><div class="stat-icon">👥</div><div class="stat-number" id="totalUsers">0</div><div class="stat-label">Total Users</div></div>
-            <div class="stat-card purple"><div class="stat-icon">💰</div><div class="stat-number" id="totalRevenue">₹0</div><div class="stat-label">Total Revenue</div></div>
+    <!-- Navigation -->
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('orders')">📦 Orders <span class="badge-count" id="orderCount">0</span></button>
+        <button class="nav-tab" onclick="switchTab('repairs')">🔧 Repairs <span class="badge-count" id="repairCount">0</span></button>
+        <button class="nav-tab" onclick="switchTab('chat')">💬 Chat <span class="badge-count" id="chatNotificationCount">0</span></button>
+        <button class="nav-tab" onclick="switchTab('all')">📋 All History</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-number" id="totalOrders">0</div><div class="stat-label">Total Orders</div></div>
+            <div class="stat-card"><div class="stat-icon">🔧</div><div class="stat-number" id="totalRepairs">0</div><div class="stat-label">Total Repairs</div></div>
+            <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-number" id="pendingCount">0</div><div class="stat-label">Pending</div></div>
+            <div class="stat-card"><div class="stat-icon">💬</div><div class="stat-number" id="unreadMessages">0</div><div class="stat-label">Unread Messages</div></div>
         </div>
 
-        <!-- TABS -->
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="orders" onclick="switchTab('orders')"><i class="fas fa-box"></i> Orders</button>
-            <button class="tab-btn" data-tab="repairs" onclick="switchTab('repairs')"><i class="fas fa-tools"></i> Repairs</button>
-            <button class="tab-btn" data-tab="users" onclick="switchTab('users')"><i class="fas fa-users"></i> Users</button>
-        </div>
-
-        <!-- TAB: ORDERS -->
-        <div id="tab-orders" class="tab-content active">
-            <div class="search-filter">
-                <input type="text" id="ordersSearch" placeholder="🔍 Search by Order ID, Name, Phone..." oninput="filterOrders()">
-                <select id="ordersStatusFilter" onchange="filterOrders()">
-                    <option value="all">All Status</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Cancelled">Cancelled</option>
-                </select>
-            </div>
-            <div class="card-container" id="ordersContainer">
-                <div class="loading"><div class="spinner"></div> Loading orders...</div>
-            </div>
-        </div>
-
-        <!-- TAB: REPAIRS -->
-        <div id="tab-repairs" class="tab-content">
-            <div class="search-filter">
-                <input type="text" id="repairsSearch" placeholder="🔍 Search by Repair ID, Name, Phone..." oninput="filterRepairs()">
-                <select id="repairsStatusFilter" onchange="filterRepairs()">
-                    <option value="all">All Status</option>
-                    <option value="Pending">Pending</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Cancelled">Cancelled</option>
-                </select>
-            </div>
-            <div class="card-container" id="repairsContainer">
-                <div class="loading"><div class="spinner"></div> Loading repairs...</div>
+        <!-- Orders Tab -->
+        <div id="ordersTab" class="tab-content">
+            <div class="table-container">
+                <h2>📦 Product Orders</h2>
+                <table>
+                    <thead><tr><th>Order ID</th><th>Customer</th><th>Phone</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>OTP</th><th>Actions</th></tr></thead>
+                    <tbody id="ordersTableBody"></tbody>
+                </table>
             </div>
         </div>
 
-        <!-- TAB: USERS -->
-        <div id="tab-users" class="tab-content">
-            <div class="search-filter">
-                <input type="text" id="usersSearch" placeholder="🔍 Search by Name, Email..." oninput="filterUsers()">
-            </div>
-            <div class="card-container" id="usersContainer">
-                <div class="loading"><div class="spinner"></div> Loading users...</div>
+        <!-- Repairs Tab -->
+        <div id="repairsTab" class="tab-content" style="display:none;">
+            <div class="table-container">
+                <h2>🔧 Repair Bookings</h2>
+                <table>
+                    <thead><tr><th>Repair ID</th><th>Customer</th><th>Phone</th><th>Device</th><th>Brand</th><th>Model</th><th>Issue</th><th>Status</th><th>OTP</th><th>Actions</th></tr></thead>
+                    <tbody id="repairsTableBody"></tbody>
+                </table>
             </div>
         </div>
 
+        <!-- Chat Tab -->
+        <div id="chatTab" class="tab-content" style="display:none;">
+            <div class="table-container">
+                <h2>💬 Customer Conversations</h2>
+                <p style="color:#666;margin-bottom:15px;font-size:13px;">Click on a customer to open chat</p>
+                <div class="customer-chat-list" id="customerChatList"></div>
+            </div>
+        </div>
+
+        <!-- All History Tab -->
+        <div id="allTab" class="tab-content" style="display:none;">
+            <div class="table-container">
+                <h2>📋 All History</h2>
+                <table>
+                    <thead><tr><th>ID</th><th>Type</th><th>Customer</th><th>Phone</th><th>Details</th><th>Status</th><th>Date</th><th>OTP</th><th>Actions</th></tr></thead>
+                    <tbody id="allTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== DETAIL MODAL ===== -->
+<div id="detailModal" class="modal-overlay">
+    <div class="modal-box">
+        <button class="close-modal" onclick="closeDetailModal()">✕</button>
+        <h3 id="detailModalTitle">Details</h3>
+        <div id="detailModalContent"></div>
+    </div>
+</div>
+
+<!-- ===== CHAT MODAL ===== -->
+<div id="chatModal" class="chat-modal-overlay">
+    <div class="chat-modal-box">
+        <div class="chat-modal-header">
+            <h4><i class="fas fa-comments"></i> Chat with <span id="chatCustomerName">Customer</span></h4>
+            <button onclick="closeChatModal()">✕</button>
+        </div>
+        <div class="chat-modal-body" id="chatModalMessages"></div>
+        <div class="chat-modal-footer">
+            <input type="text" id="chatModalInput" placeholder="Type your reply..." onkeypress="if(event.key==='Enter')sendAdminMessage()">
+            <button onclick="sendAdminMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
     </div>
 </div>
 
 <!-- ===== TOAST ===== -->
 <div id="toast" class="toast"></div>
 
-<!-- ===== MODAL ===== -->
-<div id="actionModal" class="modal">
-    <div class="modal-content">
-        <button class="close-modal" onclick="closeModal()">&times;</button>
-        <h3 id="modalTitle">Update Status</h3>
-        <div id="modalBody"></div>
-        <div class="modal-actions">
-            <button class="btn-primary" onclick="confirmAction()"><i class="fas fa-check"></i> Confirm</button>
-            <button class="btn-danger" onclick="closeModal()"><i class="fas fa-times"></i> Cancel</button>
-        </div>
-    </div>
+<!-- ===== LOADING ===== -->
+<div id="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading...</p>
 </div>
 
-<!-- ============================================================ -->
-<!-- ==================== JAVASCRIPT ==================== -->
-<!-- ============================================================ -->
 <script>
+    // ==================== FIREBASE ====================
     const firebaseConfig = {
         apiKey: "AIzaSyBUqsrDawGJbX-wgcBFRU4vuaasjt5ZnKQ",
         authDomain: "discountzone-da33a.firebaseapp.com",
@@ -568,514 +279,479 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    emailjs.init("EE236Vmj4RMCjX1Dq");
 
-    let allOrders = [], allRepairs = [], allUsers = [];
-    let currentModalType = null, currentModalDocId = null;
-    let isAdmin = false;
     const ADMIN_EMAIL = "abhishekbainsla363@gmail.com";
+    const ADMIN_UID = "admin_trust_fix";
+    let currentAdmin = null;
+    let currentChatCustomer = null;
+    let currentTab = 'orders';
+    let allOrders = [];
+    let allRepairs = [];
+    let chatConversations = {};
+    let unreadMessageCount = 0;
 
-    // ===== DOM REFS =====
-    const loginScreen = document.getElementById('loginScreen');
-    const mainContent = document.getElementById('mainContent');
-    const loginBtn = document.getElementById('loginBtn');
-    const loginError = document.getElementById('loginError');
-
-    // ===== AUTH STATE =====
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            // Check if user is admin
-            if (user.email === ADMIN_EMAIL) {
-                isAdmin = true;
-                showAdminPanel(user);
-            } else {
-                // Not admin - show error and logout
-                showLoginError('❌ Access denied. Admin only!');
-                auth.signOut();
-            }
+    // ==================== AUTH ====================
+    auth.onAuthStateChanged(async (user) => {
+        if (user && user.email === ADMIN_EMAIL) {
+            currentAdmin = user;
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            document.getElementById('adminName').textContent = user.email.split('@')[0];
+            loadAllData();
+            setupRealtimeListeners();
+        } else if (user) {
+            showToast("Access denied! Admin only.");
+            auth.signOut();
         } else {
-            showLoginScreen();
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('adminPanel').style.display = 'none';
         }
     });
 
-    // ===== SHOW/HIDE FUNCTIONS =====
-    function showAdminPanel(user) {
-        loginScreen.style.display = 'none';
-        mainContent.classList.add('visible');
-        document.getElementById('adminEmail').textContent = user.email || 'Admin';
-        loadAllData();
-        setupListeners();
-    }
-
-    function showLoginScreen() {
-        loginScreen.style.display = 'flex';
-        mainContent.classList.remove('visible');
-        loginBtn.disabled = false;
-        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
-    }
-
-    function showLoginError(msg) {
-        loginError.textContent = msg;
-        loginError.style.display = 'block';
-        setTimeout(() => { loginError.style.display = 'none'; }, 5000);
-    }
-
-    // ===== ADMIN LOGIN =====
-    function adminLogin() {
-        const email = document.getElementById('adminEmailInput').value.trim();
-        const password = document.getElementById('adminPasswordInput').value;
-        
-        if (!email || !password) {
-            showLoginError('Please enter email and password');
-            return;
-        }
-        
-        loginBtn.disabled = true;
-        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
-        
-        auth.signInWithEmailAndPassword(email, password)
-            .then(() => {
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
-            })
-            .catch((error) => {
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
-                if (error.code === 'auth/user-not-found') {
-                    showLoginError('❌ No account found with this email. Please sign up first.');
-                } else if (error.code === 'auth/wrong-password') {
-                    showLoginError('❌ Wrong password. Please try again.');
-                } else {
-                    showLoginError('❌ ' + error.message);
-                }
-            });
-    }
-
-    // ===== ADMIN GOOGLE LOGIN =====
-    function adminGoogleLogin() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        loginBtn.disabled = true;
-        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
-        
-        auth.signInWithPopup(provider)
-            .then(() => {
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
-            })
-            .catch((error) => {
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
-                showLoginError('❌ ' + error.message);
-            });
-    }
-
-    // ===== ADMIN LOGOUT =====
-    function adminLogout() {
-        if (confirm('Are you sure you want to logout?')) {
-            auth.signOut();
-            showToast('✅ Logged out successfully', 'success');
-        }
-    }
-
-    // ===== LOAD DATA =====
-    async function loadAllData() {
-        showToast('🔄 Loading data...', 'info');
+    async function adminLogin() {
+        const email = document.getElementById('adminEmail').value.trim();
+        const password = document.getElementById('adminPassword').value.trim();
+        if (!email || !password) { showToast("Fill all fields!"); return; }
+        if (email !== ADMIN_EMAIL) { document.getElementById('loginError').style.display = 'block'; return; }
+        showLoading(true);
         try {
-            await Promise.all([loadOrders(), loadRepairs(), loadUsers()]);
-            updateStats();
-            showToast('✅ Data loaded successfully!', 'success');
+            await auth.signInWithEmailAndPassword(email, password);
+            document.getElementById('loginError').style.display = 'none';
         } catch (e) {
-            showToast('❌ Error: ' + e.message, 'error');
+            document.getElementById('loginError').style.display = 'block';
+            document.getElementById('loginError').textContent = e.message;
         }
+        showLoading(false);
     }
 
-    async function loadOrders() {
-        const snapshot = await db.collection("orders").orderBy("date", "desc").get();
+    function adminLogout() {
+        auth.signOut();
+        currentAdmin = null;
         allOrders = [];
-        snapshot.forEach(doc => { const data = doc.data(); data.docId = doc.id; allOrders.push(data); });
-        renderOrders();
-    }
-
-    async function loadRepairs() {
-        const snapshot = await db.collection("repairs").orderBy("date", "desc").get();
         allRepairs = [];
-        snapshot.forEach(doc => { const data = doc.data(); data.docId = doc.id; allRepairs.push(data); });
-        renderRepairs();
+        chatConversations = {};
     }
 
-    async function loadUsers() {
-        const userMap = new Map();
-        allOrders.forEach(order => {
-            const email = order.customerEmail || '';
-            if (email && !userMap.has(email)) {
-                userMap.set(email, { email, name: order.customerName || email.split('@')[0], phone: order.customerPhone || '', address: order.customerAddress || '', orders: 0, repairs: 0, joined: order.date || new Date().toISOString() });
-            }
-            if (email) { const u = userMap.get(email); if (u) u.orders++; }
+    // ==================== LOAD DATA ====================
+    async function loadAllData() {
+        showLoading(true);
+        try {
+            const ordersSnap = await db.collection("orders").orderBy("date", "desc").get();
+            allOrders = [];
+            ordersSnap.forEach(doc => { let d = doc.data(); d.docId = doc.id; d.itemType = 'order'; allOrders.push(d); });
+
+            const repairsSnap = await db.collection("repairs").orderBy("date", "desc").get();
+            allRepairs = [];
+            repairsSnap.forEach(doc => { let d = doc.data(); d.docId = doc.id; d.itemType = 'repair'; allRepairs.push(d); });
+
+            // Load chat messages
+            const chatSnap = await db.collection("chats").orderBy("lastUpdated", "desc").get();
+            chatConversations = {};
+            chatSnap.forEach(doc => {
+                chatConversations[doc.id] = doc.data();
+            });
+
+            updateStats();
+            renderCurrentTab();
+        } catch (e) {
+            showToast("Error loading data: " + e.message);
+        }
+        showLoading(false);
+    }
+
+    function setupRealtimeListeners() {
+        // Listen for new orders
+        db.collection("orders").orderBy("date", "desc").limit(50).onSnapshot(snap => {
+            allOrders = [];
+            snap.forEach(doc => { let d = doc.data(); d.docId = doc.id; d.itemType = 'order'; allOrders.push(d); });
+            updateStats();
+            if (currentTab === 'orders' || currentTab === 'all') renderCurrentTab();
         });
-        allRepairs.forEach(repair => {
-            const email = repair.customerEmail || '';
-            if (email && !userMap.has(email)) {
-                userMap.set(email, { email, name: repair.customerName || email.split('@')[0], phone: repair.customerPhone || '', address: repair.customerAddress || '', orders: 0, repairs: 0, joined: repair.date || new Date().toISOString() });
-            }
-            if (email) { const u = userMap.get(email); if (u) u.repairs++; }
+
+        // Listen for new repairs
+        db.collection("repairs").orderBy("date", "desc").limit(50).onSnapshot(snap => {
+            allRepairs = [];
+            snap.forEach(doc => { let d = doc.data(); d.docId = doc.id; d.itemType = 'repair'; allRepairs.push(d); });
+            updateStats();
+            if (currentTab === 'repairs' || currentTab === 'all') renderCurrentTab();
         });
-        allUsers = Array.from(userMap.values());
-        renderUsers();
+
+        // Listen for new chat messages
+        db.collection("chats").orderBy("lastUpdated", "desc").onSnapshot(snap => {
+            let newUnread = 0;
+            snap.forEach(doc => {
+                const data = doc.data();
+                chatConversations[doc.id] = data;
+                if (data.unreadByAdmin && data.unreadByAdmin > 0) newUnread++;
+            });
+            if (newUnread > unreadMessageCount) {
+                showNotification("New messages received!");
+            }
+            unreadMessageCount = newUnread;
+            updateStats();
+            if (currentTab === 'chat') renderCurrentTab();
+        });
     }
 
     function updateStats() {
         document.getElementById('totalOrders').textContent = allOrders.length;
         document.getElementById('totalRepairs').textContent = allRepairs.length;
-        document.getElementById('totalUsers').textContent = allUsers.length;
-        let revenue = 0;
-        allOrders.forEach(order => { if (order.status !== 'Cancelled' && order.total) { const num = parseFloat(order.total); if (!isNaN(num)) revenue += num; } });
-        document.getElementById('totalRevenue').textContent = '₹' + revenue.toFixed(0);
+        document.getElementById('pendingCount').textContent = 
+            allOrders.filter(o => o.status === 'Pending').length + 
+            allRepairs.filter(r => r.status === 'Pending').length;
+        document.getElementById('unreadMessages').textContent = unreadMessageCount;
+        
+        document.getElementById('orderCount').textContent = allOrders.filter(o => o.status === 'Pending').length;
+        document.getElementById('repairCount').textContent = allRepairs.filter(r => r.status === 'Pending').length;
+        document.getElementById('chatNotificationCount').textContent = unreadMessageCount;
     }
 
-    // ===== RENDER FUNCTIONS (same as before) =====
-    function renderOrders() {
-        const container = document.getElementById('ordersContainer');
-        const search = document.getElementById('ordersSearch').value.toLowerCase();
-        const statusFilter = document.getElementById('ordersStatusFilter').value;
+    // ==================== TABS ====================
+    function switchTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
         
-        let filtered = allOrders.filter(order => {
-            const matchSearch = (order.orderId || '').toLowerCase().includes(search) ||
-                               (order.customerName || '').toLowerCase().includes(search) ||
-                               (order.customerPhone || '').includes(search) ||
-                               (order.customerEmail || '').toLowerCase().includes(search);
-            const matchStatus = statusFilter === 'all' || order.status === statusFilter;
-            return matchSearch && matchStatus;
-        });
-
-        if (filtered.length === 0) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i> No orders found</div>`;
-            return;
+        if (tab === 'orders') {
+            document.querySelector('.nav-tabs .nav-tab:nth-child(1)').classList.add('active');
+            document.getElementById('ordersTab').style.display = 'block';
+        } else if (tab === 'repairs') {
+            document.querySelector('.nav-tabs .nav-tab:nth-child(2)').classList.add('active');
+            document.getElementById('repairsTab').style.display = 'block';
+        } else if (tab === 'chat') {
+            document.querySelector('.nav-tabs .nav-tab:nth-child(3)').classList.add('active');
+            document.getElementById('chatTab').style.display = 'block';
+            document.getElementById('notificationBar').style.display = 'none';
+        } else if (tab === 'all') {
+            document.querySelector('.nav-tabs .nav-tab:nth-child(4)').classList.add('active');
+            document.getElementById('allTab').style.display = 'block';
         }
-
-        container.innerHTML = filtered.map(order => {
-            const statusClass = getStatusClass(order.status);
-            const statusLabel = order.status || 'Pending';
-            
-            let itemsHtml = '';
-            if (order.items) {
-                if (typeof order.items === 'string') {
-                    const lines = order.items.split('\n').filter(l => l.trim());
-                    lines.forEach(line => {
-                        let clean = line.replace(/^-\s*/, '').trim();
-                        if (clean) {
-                            let priceMatch = clean.match(/₹(\d+)/);
-                            let priceDisplay = priceMatch ? `₹${priceMatch[1]}` : '';
-                            let nameDisplay = clean.replace(/₹\d+(\s*x\s*\d+)?/, '').trim();
-                            let qtyMatch = clean.match(/x\s*(\d+)/);
-                            let qtyDisplay = qtyMatch ? `x ${qtyMatch[1]}` : '';
-                            itemsHtml += `<div class="item-row"><span class="item-name">${nameDisplay} ${qtyDisplay}</span><span class="item-price">${priceDisplay}</span></div>`;
-                        }
-                    });
-                }
-            }
-            if (!itemsHtml) itemsHtml = '<div style="color:#94a3b8; font-size:13px;">No items</div>';
-
-            return `
-            <div class="order-card">
-                <div class="card-header">
-                    <div>
-                        <span class="card-id">🛒 ${order.orderId || order.docId || 'N/A'}</span>
-                        <span class="badge ${statusClass}">${statusLabel}</span>
-                    </div>
-                    <span class="card-date">${formatDate(order.date)}</span>
-                </div>
-                <div class="card-body">
-                    <div class="customer-section">
-                        <div class="label">👤 Customer Details</div>
-                        <div class="value"><strong>${order.customerName || 'N/A'}</strong></div>
-                        <div style="font-size:13px; color:#94a3b8;">📞 ${order.customerPhone || 'N/A'}</div>
-                        <div style="font-size:13px; color:#94a3b8;">📧 ${order.customerEmail || 'N/A'}</div>
-                        <div style="font-size:13px; color:#94a3b8;">📍 ${order.customerAddress || 'N/A'}</div>
-                    </div>
-                    <div class="items-section">
-                        <div class="label">📦 Items Ordered</div>
-                        ${itemsHtml}
-                    </div>
-                    <div class="details-grid">
-                        <div class="detail-item">
-                            <div class="label">💳 Payment</div>
-                            <div class="value">${order.paymentMethod || 'N/A'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="label">🔢 UTR / Txn ID</div>
-                            <div class="value" style="font-size:12px;">${order.utr || 'COD'}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer">
-                    <div>
-                        <div class="otp">🔑 ${order.deliveryOTP || 'N/A'}</div>
-                        <div style="font-size:10px; color:#94a3b8; margin-top:2px;">Delivery OTP</div>
-                    </div>
-                    <div class="total">₹${order.total || 0}</div>
-                    <div class="actions">
-                        <button class="btn-primary" onclick="openStatusModal('order', '${order.docId}', '${statusLabel}')"><i class="fas fa-edit"></i> Status</button>
-                        ${order.status !== 'Cancelled' ? `<button class="btn-danger" onclick="cancelItem('order', '${order.docId}', '${order.customerName || 'Customer'}')"><i class="fas fa-times"></i> Cancel</button>` : ''}
-                    </div>
-                </div>
-            </div>
-        `}).join('');
+        renderCurrentTab();
     }
 
-    function renderRepairs() {
-        const container = document.getElementById('repairsContainer');
-        const search = document.getElementById('repairsSearch').value.toLowerCase();
-        const statusFilter = document.getElementById('repairsStatusFilter').value;
-        
-        let filtered = allRepairs.filter(repair => {
-            const matchSearch = (repair.repairId || '').toLowerCase().includes(search) ||
-                               (repair.customerName || '').toLowerCase().includes(search) ||
-                               (repair.customerPhone || '').includes(search) ||
-                               (repair.customerEmail || '').toLowerCase().includes(search);
-            const matchStatus = statusFilter === 'all' || repair.status === statusFilter;
-            return matchSearch && matchStatus;
-        });
-
-        if (filtered.length === 0) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i> No repairs found</div>`;
-            return;
-        }
-
-        container.innerHTML = filtered.map(repair => {
-            const statusClass = getStatusClass(repair.status);
-            const statusLabel = repair.status || 'Pending';
-            
-            return `
-            <div class="repair-card">
-                <div class="card-header">
-                    <div>
-                        <span class="card-id">🔧 ${repair.repairId || repair.docId || 'N/A'}</span>
-                        <span class="badge ${statusClass}">${statusLabel}</span>
-                    </div>
-                    <span class="card-date">${formatDate(repair.date)}</span>
-                </div>
-                <div class="card-body">
-                    <div class="customer-section">
-                        <div class="label">👤 Customer Details</div>
-                        <div class="value"><strong>${repair.customerName || 'N/A'}</strong></div>
-                        <div style="font-size:13px; color:#94a3b8;">📞 ${repair.customerPhone || 'N/A'}</div>
-                        <div style="font-size:13px; color:#94a3b8;">📧 ${repair.customerEmail || 'N/A'}</div>
-                        <div style="font-size:13px; color:#94a3b8;">📍 ${repair.customerAddress || 'N/A'}</div>
-                    </div>
-                    <div class="items-section">
-                        <div class="label">📱 Device Details</div>
-                        <div style="display:flex; justify-content:space-between; padding:4px 0;">
-                            <span style="color:#94a3b8;">Device Type</span>
-                            <span style="font-weight:500;">${repair.deviceType || 'N/A'}</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #1a2236;">
-                            <span style="color:#94a3b8;">Brand</span>
-                            <span style="font-weight:500;">${repair.deviceBrand || 'N/A'}</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #1a2236;">
-                            <span style="color:#94a3b8;">Model</span>
-                            <span style="font-weight:500;">${repair.deviceModel || 'N/A'}</span>
-                        </div>
-                        <div style="padding:6px 0; background:#0a0e17; border-radius:6px; margin-top:4px; padding:6px 8px;">
-                            <div style="color:#94a3b8; font-size:11px;">⚠️ Issue Reported</div>
-                            <div style="font-size:13px; color:#e2e8f0;">${repair.deviceFaults || 'N/A'}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer">
-                    <div>
-                        <div class="otp">🔑 ${repair.deliveryOTP || 'N/A'}</div>
-                        <div style="font-size:10px; color:#94a3b8; margin-top:2px;">Repair OTP</div>
-                    </div>
-                    <div style="font-size:13px; color:#94a3b8;">📞 ${repair.customerPhone || ''}</div>
-                    <div class="actions">
-                        <button class="btn-primary" onclick="openStatusModal('repair', '${repair.docId}', '${statusLabel}')"><i class="fas fa-edit"></i> Status</button>
-                        ${repair.status !== 'Cancelled' ? `<button class="btn-danger" onclick="cancelItem('repair', '${repair.docId}', '${repair.customerName || 'Customer'}')"><i class="fas fa-times"></i> Cancel</button>` : ''}
-                    </div>
-                </div>
-            </div>
-        `}).join('');
+    function renderCurrentTab() {
+        if (currentTab === 'orders') renderOrdersTable();
+        else if (currentTab === 'repairs') renderRepairsTable();
+        else if (currentTab === 'chat') renderChatList();
+        else if (currentTab === 'all') renderAllTable();
     }
 
-    function renderUsers() {
-        const container = document.getElementById('usersContainer');
-        const search = document.getElementById('usersSearch').value.toLowerCase();
-        
-        let filtered = allUsers.filter(user => {
-            return (user.name || '').toLowerCase().includes(search) ||
-                   (user.email || '').toLowerCase().includes(search);
-        });
-
-        if (filtered.length === 0) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i> No users found</div>`;
-            return;
-        }
-
-        container.innerHTML = filtered.map(user => `
-            <div class="order-card">
-                <div class="card-header">
-                    <div>
-                        <span class="card-id">👤 ${user.name || 'N/A'}</span>
-                        <span class="badge badge-completed">Active</span>
-                    </div>
-                    <span class="card-date">${formatDate(user.joined)}</span>
-                </div>
-                <div class="card-body">
-                    <div class="customer-section">
-                        <div class="label">📧 Email</div>
-                        <div class="value">${user.email || 'N/A'}</div>
-                    </div>
-                    <div class="details-grid">
-                        <div class="detail-item">
-                            <div class="label">📦 Orders</div>
-                            <div class="value">${user.orders || 0}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="label">🔧 Repairs</div>
-                            <div class="value">${user.repairs || 0}</div>
-                        </div>
-                        <div class="detail-item" style="grid-column: 1 / -1;">
-                            <div class="label">📍 Address</div>
-                            <div class="value" style="font-size:12px;">${user.address || 'N/A'}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer">
-                    <div style="font-size:13px; color:#94a3b8;">📞 ${user.phone || 'N/A'}</div>
-                    <div style="font-size:12px; color:#64748b;">Total: ${(user.orders || 0) + (user.repairs || 0)} interactions</div>
-                </div>
-            </div>
+    // ==================== RENDER TABLES ====================
+    function renderOrdersTable() {
+        const tbody = document.getElementById('ordersTableBody');
+        tbody.innerHTML = allOrders.map(o => `
+            <tr>
+                <td><strong>${o.orderId || 'N/A'}</strong></td>
+                <td>${o.customerName || 'N/A'}</td>
+                <td>${o.customerPhone || 'N/A'}</td>
+                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(o.items || '').substring(0, 50)}</td>
+                <td>₹${o.total || 0}</td>
+                <td>${o.paymentMethod || 'N/A'}</td>
+                <td><span class="status-badge status-${(o.status || 'pending').toLowerCase()}">${o.status || 'Pending'}</span></td>
+                <td><span class="otp-display">${o.deliveryOTP || 'N/A'}</span></td>
+                <td>
+                    <button class="action-btn btn-view" onclick="viewDetails('${o.docId}', 'order')"><i class="fas fa-eye"></i></button>
+                    ${o.status === 'Pending' ? `<button class="action-btn btn-ship" onclick="updateStatus('${o.docId}', 'order', 'Shipped')"><i class="fas fa-truck"></i></button>` : ''}
+                    ${o.status === 'Shipped' ? `<button class="action-btn btn-complete" onclick="updateStatus('${o.docId}', 'order', 'Completed')"><i class="fas fa-check"></i></button>` : ''}
+                    ${o.status !== 'Cancelled' && o.status !== 'Completed' ? `<button class="action-btn btn-cancel" onclick="cancelItem('${o.docId}', 'order')"><i class="fas fa-times"></i></button>` : ''}
+                    <button class="action-btn btn-chat" onclick="openAdminChat('${o.customerEmail || ''}', '${o.customerName || 'Customer'}')"><i class="fas fa-comment"></i></button>
+                </td>
+            </tr>
         `).join('');
     }
 
-    // ===== FILTER FUNCTIONS =====
-    function filterOrders() { renderOrders(); }
-    function filterRepairs() { renderRepairs(); }
-    function filterUsers() { renderUsers(); }
-
-    function switchTab(tab) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById('tab-' + tab).classList.add('active');
-        document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+    function renderRepairsTable() {
+        const tbody = document.getElementById('repairsTableBody');
+        tbody.innerHTML = allRepairs.map(r => `
+            <tr>
+                <td><strong>${r.repairId || 'N/A'}</strong></td>
+                <td>${r.customerName || 'N/A'}</td>
+                <td>${r.customerPhone || 'N/A'}</td>
+                <td>${r.deviceType || 'N/A'}</td>
+                <td>${r.deviceBrand || 'N/A'}</td>
+                <td>${r.deviceModel || 'N/A'}</td>
+                <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(r.deviceFaults || '').substring(0, 40)}</td>
+                <td><span class="status-badge status-${(r.status || 'pending').toLowerCase()}">${r.status || 'Pending'}</span></td>
+                <td><span class="otp-display">${r.deliveryOTP || 'N/A'}</span></td>
+                <td>
+                    <button class="action-btn btn-view" onclick="viewDetails('${r.docId}', 'repair')"><i class="fas fa-eye"></i></button>
+                    ${r.status === 'Pending' ? `<button class="action-btn btn-complete" onclick="updateStatus('${r.docId}', 'repair', 'Completed')"><i class="fas fa-check"></i></button>` : ''}
+                    ${r.status !== 'Cancelled' && r.status !== 'Completed' ? `<button class="action-btn btn-cancel" onclick="cancelItem('${r.docId}', 'repair')"><i class="fas fa-times"></i></button>` : ''}
+                    <button class="action-btn btn-chat" onclick="openAdminChat('${r.customerEmail || ''}', '${r.customerName || 'Customer'}')"><i class="fas fa-comment"></i></button>
+                </td>
+            </tr>
+        `).join('');
     }
 
-    function openStatusModal(type, docId, currentStatus) {
-        currentModalType = type;
-        currentModalDocId = docId;
-        
-        const statusOptions = type === 'order' 
-            ? ['Pending', 'Shipped', 'Completed', 'Cancelled']
-            : ['Pending', 'In Progress', 'Completed', 'Cancelled'];
-        
-        document.getElementById('modalTitle').textContent = `Update ${type === 'order' ? 'Order' : 'Repair'} Status`;
-        document.getElementById('modalBody').innerHTML = `
-            <label>Current: <strong>${currentStatus}</strong></label>
-            <label>New Status:</label>
-            <select id="newStatusSelect">
-                ${statusOptions.map(s => `<option value="${s}" ${s === currentStatus ? 'selected' : ''}>${s}</option>`).join('')}
-            </select>
-            <label>Note (optional):</label>
-            <textarea id="statusNote" placeholder="Add a note..." rows="2"></textarea>
-        `;
-        document.getElementById('actionModal').classList.add('active');
+    function renderAllTable() {
+        const all = [...allOrders, ...allRepairs].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const tbody = document.getElementById('allTableBody');
+        tbody.innerHTML = all.map(item => `
+            <tr>
+                <td>${item.orderId || item.repairId || 'N/A'}</td>
+                <td>${item.itemType === 'order' ? '📦 Order' : '🔧 Repair'}</td>
+                <td>${item.customerName || 'N/A'}</td>
+                <td>${item.customerPhone || 'N/A'}</td>
+                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.itemType === 'order' ? (item.items || '').substring(0, 40) : (item.deviceFaults || '').substring(0, 40)}</td>
+                <td><span class="status-badge status-${(item.status || 'pending').toLowerCase()}">${item.status || 'Pending'}</span></td>
+                <td>${new Date(item.date).toLocaleDateString()}</td>
+                <td><span class="otp-display">${item.deliveryOTP || 'N/A'}</span></td>
+                <td>
+                    <button class="action-btn btn-view" onclick="viewDetails('${item.docId}', '${item.itemType}')"><i class="fas fa-eye"></i></button>
+                    <button class="action-btn btn-chat" onclick="openAdminChat('${item.customerEmail || ''}', '${item.customerName || 'Customer'}')"><i class="fas fa-comment"></i></button>
+                </td>
+            </tr>
+        `).join('');
     }
 
-    async function confirmAction() {
-        const newStatus = document.getElementById('newStatusSelect').value;
-        const note = document.getElementById('statusNote').value.trim();
+    // ==================== CHAT LIST ====================
+    function renderChatList() {
+        const container = document.getElementById('customerChatList');
+        const chatKeys = Object.keys(chatConversations);
         
-        if (!newStatus) { showToast('Select a status', 'error'); return; }
-        closeModal();
-        showToast('🔄 Updating...', 'info');
+        if (chatKeys.length === 0) {
+            container.innerHTML = '<p style="text-align:center;padding:30px;color:#999;">No conversations yet</p>';
+            return;
+        }
+
+        container.innerHTML = chatKeys.map(key => {
+            const chat = chatConversations[key];
+            const lastMsg = chat.messages && chat.messages.length > 0 ? 
+                chat.messages[chat.messages.length - 1] : null;
+            const lastMsgText = lastMsg ? lastMsg.text.substring(0, 50) : 'No messages';
+            const hasUnread = chat.unreadByAdmin && chat.unreadByAdmin > 0;
+            
+            return `
+            <div class="customer-chat-card" onclick="openAdminChat('${key}', '${chat.customerName || 'Customer'}')">
+                <div class="cust-name">
+                    <i class="fas fa-user-circle"></i> ${chat.customerName || 'Customer'}
+                    ${hasUnread ? '<span class="unread-dot"></span>' : ''}
+                </div>
+                <div class="cust-email">📧 ${key}</div>
+                <div class="last-msg">💬 ${lastMsgText}...</div>
+                <div style="font-size:10px;color:#999;margin-top:5px;">
+                    ${lastMsg ? new Date(lastMsg.timestamp).toLocaleString() : ''}
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    // ==================== CHAT FUNCTIONS ====================
+    async function openAdminChat(customerEmail, customerName) {
+        if (!customerEmail) { showToast("No email found for this customer"); return; }
+        
+        currentChatCustomer = { email: customerEmail, name: customerName };
+        document.getElementById('chatCustomerName').textContent = customerName;
+        
+        const messagesDiv = document.getElementById('chatModalMessages');
+        messagesDiv.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">Loading messages...</p>';
+        
+        document.getElementById('chatModal').classList.add('active');
+        
+        // Load existing messages
+        const chatDoc = await db.collection("chats").doc(customerEmail).get();
+        if (chatDoc.exists) {
+            const chatData = chatDoc.data();
+            const messages = chatData.messages || [];
+            
+            messagesDiv.innerHTML = messages.map(msg => `
+                <div class="msg ${msg.sender === 'admin' ? 'admin' : 'customer'}">
+                    <span class="sender">${msg.sender === 'admin' ? '👑 Admin' : '👤 ' + customerName}</span>
+                    ${msg.text}
+                    <span class="time">${new Date(msg.timestamp).toLocaleString()}</span>
+                </div>
+            `).join('');
+            
+            // Mark as read
+            if (chatData.unreadByAdmin > 0) {
+                await db.collection("chats").doc(customerEmail).update({ unreadByAdmin: 0 });
+            }
+        } else {
+            messagesDiv.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">No messages yet. Start the conversation!</p>';
+        }
+        
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        
+        // Listen for new messages in real-time
+        db.collection("chats").doc(customerEmail).onSnapshot(doc => {
+            if (doc.exists && currentChatCustomer && currentChatCustomer.email === customerEmail) {
+                const data = doc.data();
+                const messages = data.messages || [];
+                messagesDiv.innerHTML = messages.map(msg => `
+                    <div class="msg ${msg.sender === 'admin' ? 'admin' : 'customer'}">
+                        <span class="sender">${msg.sender === 'admin' ? '👑 Admin' : '👤 ' + customerName}</span>
+                        ${msg.text}
+                        <span class="time">${new Date(msg.timestamp).toLocaleString()}</span>
+                    </div>
+                `).join('');
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+        });
+    }
+
+    async function sendAdminMessage() {
+        if (!currentChatCustomer) return;
+        
+        const input = document.getElementById('chatModalInput');
+        const text = input.value.trim();
+        if (!text) return;
+        
+        const customerEmail = currentChatCustomer.email;
+        const customerName = currentChatCustomer.name;
+        
+        const message = {
+            text: text,
+            sender: 'admin',
+            timestamp: new Date().toISOString()
+        };
         
         try {
-            const collection = currentModalType === 'order' ? 'orders' : 'repairs';
-            const docRef = db.collection(collection).doc(currentModalDocId);
-            const doc = await docRef.get();
-            const data = doc.data();
+            const chatRef = db.collection("chats").doc(customerEmail);
+            const chatDoc = await chatRef.get();
             
-            await docRef.update({
-                status: newStatus,
-                updatedAt: new Date().toISOString(),
-                statusNote: note || '',
-                lastUpdatedBy: auth.currentUser?.email || 'Admin'
-            });
-
-            showToast(`✅ Status updated to ${newStatus}!`, 'success');
-            refreshData();
+            if (chatDoc.exists) {
+                await chatRef.update({
+                    messages: firebase.firestore.FieldValue.arrayUnion(message),
+                    lastUpdated: new Date().toISOString(),
+                    customerName: customerName,
+                    unreadByCustomer: firebase.firestore.FieldValue.increment(1)
+                });
+            } else {
+                await chatRef.set({
+                    customerEmail: customerEmail,
+                    customerName: customerName,
+                    messages: [message],
+                    lastUpdated: new Date().toISOString(),
+                    unreadByAdmin: 0,
+                    unreadByCustomer: 1
+                });
+            }
+            
+            input.value = '';
         } catch (e) {
-            showToast('❌ Error: ' + e.message, 'error');
+            showToast("Error sending message: " + e.message);
         }
     }
 
-    function cancelItem(type, docId, customerName) {
-        if (!confirm(`⚠️ Cancel this ${type} for ${customerName}?`)) return;
-        showToast('🔄 Cancelling...', 'info');
-        const collection = type === 'order' ? 'orders' : 'repairs';
-        db.collection(collection).doc(docId).update({
-            status: 'Cancelled',
-            cancelledAt: new Date().toISOString(),
-            cancelledBy: 'Admin',
-            cancelledByEmail: auth.currentUser?.email || 'Admin'
-        }).then(() => {
-            showToast('✅ Cancelled successfully!', 'success');
-            refreshData();
-        }).catch(e => showToast('❌ Error: ' + e.message, 'error'));
+    function closeChatModal() {
+        document.getElementById('chatModal').classList.remove('active');
+        currentChatCustomer = null;
     }
 
-    function closeModal() { document.getElementById('actionModal').classList.remove('active'); }
-    function refreshData() { showToast('🔄 Refreshing...', 'info'); loadAllData(); }
-
-    function getStatusClass(status) {
-        const map = {
-            'Pending': 'badge-pending',
-            'Shipped': 'badge-shipped',
-            'Completed': 'badge-completed',
-            'Cancelled': 'badge-cancelled',
-            'In Progress': 'badge-inprogress'
-        };
-        return map[status] || 'badge-pending';
-    }
-
-    function formatDate(dateStr) {
-        if (!dateStr) return 'N/A';
+    // ==================== STATUS UPDATES ====================
+    async function updateStatus(docId, type, newStatus) {
+        showLoading(true);
         try {
-            const d = new Date(dateStr);
-            return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        } catch { return dateStr; }
+            const collection = type === 'order' ? 'orders' : 'repairs';
+            await db.collection(collection).doc(docId).update({ status: newStatus });
+            showToast(`✅ Status updated to ${newStatus}!`);
+            loadAllData();
+        } catch (e) { showToast("Error: " + e.message); }
+        showLoading(false);
     }
 
-    function showToast(msg, type = 'info') {
-        const toast = document.getElementById('toast');
-        toast.textContent = msg;
-        toast.className = 'toast';
-        if (type === 'error') toast.classList.add('error');
-        else if (type === 'success') toast.classList.add('success');
-        toast.style.display = 'block';
-        clearTimeout(toast._timeout);
-        toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    async function cancelItem(docId, type) {
+        if (!confirm('Are you sure you want to cancel this?')) return;
+        showLoading(true);
+        try {
+            const collection = type === 'order' ? 'orders' : 'repairs';
+            await db.collection(collection).doc(docId).update({ 
+                status: 'Cancelled', 
+                cancelledBy: 'Admin',
+                cancelledAt: new Date().toISOString(),
+                cancelReason: 'Cancelled by admin'
+            });
+            showToast("✅ Cancelled successfully!");
+            loadAllData();
+        } catch (e) { showToast("Error: " + e.message); }
+        showLoading(false);
     }
 
-    function setupListeners() {
-        db.collection("orders").orderBy("date", "desc").onSnapshot(() => { 
-            if (isAdmin) { loadOrders(); updateStats(); }
-        });
-        db.collection("repairs").orderBy("date", "desc").onSnapshot(() => { 
-            if (isAdmin) { loadRepairs(); updateStats(); }
-        });
+    // ==================== DETAIL VIEW ====================
+    function viewDetails(docId, type) {
+        const collection = type === 'order' ? allOrders : allRepairs;
+        const item = collection.find(i => i.docId === docId);
+        if (!item) return;
+        
+        document.getElementById('detailModalTitle').textContent = type === 'order' ? '📦 Order Details' : '🔧 Repair Details';
+        
+        let html = '';
+        if (type === 'order') {
+            html = `
+                <div class="detail-row"><span class="label">Order ID</span><span class="value">${item.orderId}</span></div>
+                <div class="detail-row"><span class="label">Customer</span><span class="value">${item.customerName}</span></div>
+                <div class="detail-row"><span class="label">Phone</span><span class="value">${item.customerPhone}</span></div>
+                <div class="detail-row"><span class="label">Address</span><span class="value">${item.customerAddress}</span></div>
+                <div class="detail-row"><span class="label">Items</span><span class="value">${item.items}</span></div>
+                <div class="detail-row"><span class="label">Total</span><span class="value">₹${item.total}</span></div>
+                <div class="detail-row"><span class="label">Payment</span><span class="value">${item.paymentMethod}</span></div>
+                <div class="detail-row"><span class="label">UTR</span><span class="value">${item.utr || 'N/A'}</span></div>
+                <div class="detail-row"><span class="label">Status</span><span class="value">${item.status}</span></div>
+                <div class="detail-row"><span class="label">OTP</span><span class="value"><span class="otp-display">${item.deliveryOTP}</span></span></div>
+                <div class="detail-row"><span class="label">Date</span><span class="value">${new Date(item.date).toLocaleString()}</span></div>
+            `;
+        } else {
+            html = `
+                <div class="detail-row"><span class="label">Repair ID</span><span class="value">${item.repairId}</span></div>
+                <div class="detail-row"><span class="label">Customer</span><span class="value">${item.customerName}</span></div>
+                <div class="detail-row"><span class="label">Phone</span><span class="value">${item.customerPhone}</span></div>
+                <div class="detail-row"><span class="label">Address</span><span class="value">${item.customerAddress}</span></div>
+                <div class="detail-row"><span class="label">Device Type</span><span class="value">${item.deviceType}</span></div>
+                <div class="detail-row"><span class="label">Brand</span><span class="value">${item.deviceBrand}</span></div>
+                <div class="detail-row"><span class="label">Model</span><span class="value">${item.deviceModel}</span></div>
+                <div class="detail-row"><span class="label">Issue</span><span class="value">${item.deviceFaults}</span></div>
+                <div class="detail-row"><span class="label">Status</span><span class="value">${item.status}</span></div>
+                <div class="detail-row"><span class="label">OTP</span><span class="value"><span class="otp-display">${item.deliveryOTP}</span></span></div>
+                <div class="detail-row"><span class="label">Date</span><span class="value">${new Date(item.date).toLocaleString()}</span></div>
+            `;
+        }
+        
+        document.getElementById('detailModalContent').innerHTML = html;
+        document.getElementById('detailModal').classList.add('active');
     }
 
-    document.getElementById('actionModal').addEventListener('click', function(e) {
-        if (e.target === this) closeModal();
+    function closeDetailModal() {
+        document.getElementById('detailModal').classList.remove('active');
+    }
+
+    // ==================== NOTIFICATIONS ====================
+    function showNotification(text) {
+        document.getElementById('notificationText').textContent = text;
+        document.getElementById('notificationBar').style.display = 'flex';
+        
+        // Auto hide after 5 seconds
+        setTimeout(() => {
+            document.getElementById('notificationBar').style.display = 'none';
+        }, 5000);
+    }
+
+    // ==================== UTILS ====================
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.style.display = 'block';
+        clearTimeout(t._timeout);
+        t._timeout = setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    function showLoading(show) {
+        document.getElementById('loading').classList.toggle('active', show);
+    }
+
+    // Close modals on overlay click
+    document.getElementById('detailModal').addEventListener('click', function(e) {
+        if (e.target === this) closeDetailModal();
+    });
+    document.getElementById('chatModal').addEventListener('click', function(e) {
+        if (e.target === this) closeChatModal();
     });
 
-    // Enter key support for login
-    document.getElementById('adminPasswordInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') adminLogin();
-    });
-    document.getElementById('adminEmailInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') document.getElementById('adminPasswordInput').focus();
+    // Initial load check
+    auth.onAuthStateChanged(user => {
+        if (user && user.email === ADMIN_EMAIL) {
+            // Already handled above
+        }
     });
 </script>
 </body>
