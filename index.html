@@ -33,7 +33,6 @@
         .order-history-btn{background:#ff9800;color:white;border:none;padding:4px 10px;border-radius:20px;cursor:pointer;font-size:11px;}
         .admin-panel-btn{background:#e74c3c;color:white;border:none;padding:4px 10px;border-radius:20px;cursor:pointer;font-size:11px;margin-left:4px;}
 
-        /* Floating Buttons Container */
         .floating-buttons-wrapper{position:fixed;right:20px;z-index:150;display:flex;flex-direction:column;align-items:center;gap:12px;}
         .floating-buttons-wrapper.bottom-chat{bottom:100px;}
         .floating-buttons-wrapper.bottom-call{bottom:175px;}
@@ -52,7 +51,6 @@
         .badge-24{position:absolute;top:-6px;right:-6px;background:#ff4444;color:white;font-size:8px;padding:2px 6px;border-radius:20px;font-weight:bold;animation:badge-pulse 1.5s infinite;}
         @keyframes badge-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.2);}}
 
-        /* Chat Box */
         .chat-box{position:fixed;bottom:90px;right:20px;width:350px;max-width:92vw;height:450px;max-height:65vh;background:white;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,0.3);display:none;flex-direction:column;z-index:200;overflow:hidden;}
         .chat-box.open{display:flex;}
         .chat-header{background:#1a237e;color:white;padding:12px 15px;display:flex;justify-content:space-between;align-items:center;font-weight:bold;font-size:14px;flex-shrink:0;}
@@ -164,14 +162,28 @@
         .toast{position:fixed;bottom:20px;left:20px;right:20px;background:#1a1a2e;color:white;padding:12px;border-radius:10px;text-align:center;display:none;z-index:1100;font-size:14px;}
         footer{text-align:center;padding:15px;color:#666;font-size:11px;background:#f0f4f0;margin-top:30px;}
 
-        .order-history-card{background:white;border-radius:12px;padding:15px;margin-bottom:12px;border-left:4px solid #1a237e;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
-        .order-history-card .order-header{display:flex;justify-content:space-between;flex-wrap:wrap;margin-bottom:8px;}
+        /* Order History - Expandable Card */
+        .order-history-card{background:white;border-radius:12px;padding:15px;margin-bottom:12px;border-left:4px solid #1a237e;box-shadow:0 2px 8px rgba(0,0,0,0.06);cursor:pointer;transition:all 0.2s;}
+        .order-history-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+        .order-history-card .order-header{display:flex;justify-content:space-between;flex-wrap:wrap;margin-bottom:6px;}
         .order-history-card .order-id{font-size:14px;font-weight:700;color:#1a1a1a;}
         .order-history-card .order-status{padding:3px 12px;border-radius:20px;font-size:11px;font-weight:600;}
         .status-pending{background:#ff9800;color:white;}.status-shipped{background:#2196f3;color:white;}
         .status-completed{background:#4caf50;color:white;}.status-cancelled{background:#e74c3c;color:white;}
         .otp-badge{background:#1a237e;color:white;padding:2px 8px;border-radius:15px;font-size:10px;font-weight:bold;display:inline-block;margin-left:6px;}
-        .cancel-btn{background:#e74c3c;color:white;border:none;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:11px;margin-top:10px;}
+        
+        .order-detail-content{display:none;margin-top:12px;padding-top:12px;border-top:1px solid #eee;}
+        .order-detail-content.open{display:block;}
+        .order-detail-items{background:#f8f9fa;border-radius:8px;padding:10px;margin:8px 0;}
+        .order-detail-item{display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid #eee;}
+        .order-detail-item:last-child{border-bottom:none;}
+        .order-detail-item img{width:40px;height:40px;object-fit:contain;border-radius:4px;}
+        .order-detail-item .info{flex:1;}
+        .order-detail-item .info .name{font-size:13px;font-weight:500;}
+        .order-detail-item .info .price{font-size:12px;color:#1a237e;}
+        .order-detail-item .total{font-weight:bold;font-size:13px;}
+        
+        .cancel-btn{background:#e74c3c;color:white;border:none;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:11px;margin-top:8px;}
         .cancel-btn:hover{background:#c0392b;}
 
         .cancel-reason-modal .reason-options{display:flex;flex-direction:column;gap:8px;margin:12px 0;}
@@ -442,7 +454,9 @@
     <div class="modal-content">
         <span class="close-modal-btn" onclick="closeHistoryModal()">&times;</span>
         <h3><i class="fas fa-history"></i> My Orders & Repairs</h3>
-        <div id="orderHistoryList" style="max-height:60vh;overflow-y:auto;"></div>
+        <div id="orderHistoryList" style="max-height:60vh;overflow-y:auto;">
+            <p style="text-align:center;padding:20px;color:#666;">Click on any order to see full details</p>
+        </div>
     </div>
 </div>
 
@@ -533,12 +547,11 @@
     let selectedCancelItemType = null;
     const ADMIN_EMAIL = "abhishekbainsla363@gmail.com";
     let adminTab = "orders";
+    let chatOpen = false;
+    let lastAutoReplyTime = 0;
+    const AUTO_REPLY_COOLDOWN = 2 * 60 * 60 * 1000;
 
     // ==================== CHAT FUNCTIONS ====================
-    let lastAutoReplyTime = 0;
-    const AUTO_REPLY_COOLDOWN = 2 * 60 * 60 * 1000; // 2 hours
-    let chatOpen = false;
-
     function openChatOrLogin() {
         if (!currentUser) {
             document.getElementById('loginRequiredMsg').classList.add('show');
@@ -829,7 +842,6 @@
         showGlobalLoading(true);
         try{
             const oid="ORD"+Date.now()+Math.floor(Math.random()*1000);
-            // Detailed items array with all info
             const items = cart.map(i => ({
                 id: i.id,
                 name: i.name,
@@ -850,7 +862,7 @@
                 customerName: n,
                 customerPhone: p,
                 customerAddress: a,
-                items: items, // Full details array
+                items: items,
                 total: total,
                 paymentMethod: pm[selectedPayment],
                 utr: utr||"COD",
@@ -859,7 +871,6 @@
                 website: "Trust Fix"
             });
             
-            // Email notification
             const itemsString = items.map(i => 
                 `- ${i.name} (₹${i.price}) x ${i.quantity} = ₹${i.price*i.quantity}`
             ).join('\n');
@@ -913,9 +924,19 @@
     async function loginWithGoogle(){showGlobalLoading(true);try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());closeLoginModal();showToast("Google login!");}catch(e){showToast(e.message);}finally{showGlobalLoading(false);}}
     function logout(){auth.signOut();cart=[];saveCart();updateCartCount();lastAutoReplyTime=0;showToast("Logged out");}
 
-    // ==================== CANCEL ====================
+    // ==================== CANCEL (ALWAYS AVAILABLE) ====================
     function selectReason(el,r){document.querySelectorAll('.reason-option').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');el.querySelector('input').checked=true;selectedCancelReason=r;document.getElementById('otherReasonDiv').style.display=r==='Other'?'block':'none';}
-    function openCancelModal(id,type){pendingCancelOrderId=id;pendingCancelRepairId=id;selectedCancelItemType=type;selectedCancelReason="";document.querySelectorAll('.reason-option').forEach(o=>{o.classList.remove('selected');o.querySelector('input').checked=false;});document.getElementById('otherReasonDiv').style.display='none';document.getElementById('cancelReasonModal').style.display='flex';}
+    
+    function openCancelModal(id,type){
+        pendingCancelOrderId=id;
+        pendingCancelRepairId=id;
+        selectedCancelItemType=type;
+        selectedCancelReason="";
+        document.querySelectorAll('.reason-option').forEach(o=>{o.classList.remove('selected');o.querySelector('input').checked=false;});
+        document.getElementById('otherReasonDiv').style.display='none';
+        document.getElementById('cancelReasonModal').style.display='flex';
+    }
+    
     async function confirmCancel(){
         if(!selectedCancelReason){showToast("Select reason");return;}
         let fr=selectedCancelReason;
@@ -923,23 +944,62 @@
         showGlobalLoading(true);
         try{
             if(selectedCancelItemType==='order'){
-                const d=await db.collection("orders").doc(pendingCancelOrderId).get(),dd=d.data();
-                await db.collection("orders").doc(pendingCancelOrderId).update({status:"Cancelled",cancelReason:fr,cancelledAt:new Date().toISOString(),cancelledBy:"Customer"});
-                await emailjs.send("service_gbou2dl","template_lp2zf4b",{to_email:ADMIN_EMAIL,customer_name:dd.customerName||"N/A",customer_phone:dd.customerPhone||"N/A",order_items:dd.items||"N/A",order_total:dd.total||"N/A",payment_method:dd.paymentMethod||"N/A",order_date:new Date().toLocaleString(),order_type:"Order Cancelled",action_type:"CANCELLED",cancel_reason:fr,cancelled_by:"Customer"});
+                const d=await db.collection("orders").doc(pendingCancelOrderId).get();
+                const dd=d.data();
+                await db.collection("orders").doc(pendingCancelOrderId).update({
+                    status:"Cancelled",
+                    cancelReason:fr,
+                    cancelledAt:new Date().toISOString(),
+                    cancelledBy:"Customer"
+                });
+                await emailjs.send("service_gbou2dl","template_lp2zf4b",{
+                    to_email: ADMIN_EMAIL,
+                    customer_name: dd.customerName||"N/A",
+                    customer_phone: dd.customerPhone||"N/A",
+                    order_items: dd.items ? dd.items.map(i=>i.name).join(', ') : 'N/A',
+                    order_total: dd.total||"N/A",
+                    payment_method: dd.paymentMethod||"N/A",
+                    order_date: new Date().toLocaleString(),
+                    order_type: "Order Cancelled",
+                    action_type: "CANCELLED",
+                    cancel_reason: fr,
+                    cancelled_by: "Customer"
+                });
                 showToast("✅ Order cancelled!");
             }else{
-                const d=await db.collection("repairs").doc(pendingCancelRepairId).get(),dd=d.data();
-                await db.collection("repairs").doc(pendingCancelRepairId).update({status:"Cancelled",cancelReason:fr,cancelledAt:new Date().toISOString(),cancelledBy:"Customer"});
-                await emailjs.send("service_gbou2dl","template_lp2zf4b",{to_email:ADMIN_EMAIL,customer_name:dd.customerName||"N/A",customer_phone:dd.customerPhone||"N/A",device_type:dd.deviceType||"N/A",device_brand:dd.deviceBrand||"N/A",device_model:dd.deviceModel||"N/A",device_faults:dd.deviceFaults||"N/A",order_date:new Date().toLocaleString(),order_type:"Repair Cancelled",action_type:"CANCELLED",cancel_reason:fr,cancelled_by:"Customer"});
+                const d=await db.collection("repairs").doc(pendingCancelRepairId).get();
+                const dd=d.data();
+                await db.collection("repairs").doc(pendingCancelRepairId).update({
+                    status:"Cancelled",
+                    cancelReason:fr,
+                    cancelledAt:new Date().toISOString(),
+                    cancelledBy:"Customer"
+                });
+                await emailjs.send("service_gbou2dl","template_lp2zf4b",{
+                    to_email: ADMIN_EMAIL,
+                    customer_name: dd.customerName||"N/A",
+                    customer_phone: dd.customerPhone||"N/A",
+                    device_type: dd.deviceType||"N/A",
+                    device_brand: dd.deviceBrand||"N/A",
+                    device_model: dd.deviceModel||"N/A",
+                    device_faults: dd.deviceFaults||"N/A",
+                    order_date: new Date().toLocaleString(),
+                    order_type: "Repair Cancelled",
+                    action_type: "CANCELLED",
+                    cancel_reason: fr,
+                    cancelled_by: "Customer"
+                });
                 showToast("✅ Repair cancelled!");
             }
-            closeCancelReasonModal();showOrderHistory();if(currentUser?.email === ADMIN_EMAIL) openAdminPanel();
+            closeCancelReasonModal();
+            showOrderHistory();
+            if(currentUser?.email === ADMIN_EMAIL) openAdminPanel();
         }catch(e){showToast("Error: "+e.message);}
         finally{showGlobalLoading(false);}
     }
     function closeCancelReasonModal(){document.getElementById('cancelReasonModal').style.display='none';}
 
-    // ==================== ORDER HISTORY ====================
+    // ==================== ORDER HISTORY (EXPANDABLE DETAIL) ====================
     async function showOrderHistory(){
         if(!currentUser){showToast("Login first");return;}
         showGlobalLoading(true);
@@ -950,55 +1010,104 @@
             os.forEach(d=>{let x=d.data();x.docId=d.id;x.itemType="order";all.push(x);});
             rs.forEach(d=>{let x=d.data();x.docId=d.id;x.itemType="repair";all.push(x);});
             all.sort((a,b)=>new Date(b.date)-new Date(a.date));
-            let h=all.length===0?"<p style='text-align:center;padding:20px;'>No orders yet</p>":"";
+            
+            if(all.length===0){
+                document.getElementById('orderHistoryList').innerHTML = "<p style='text-align:center;padding:20px;'>No orders yet</p>";
+                document.getElementById('historyModal').style.display='flex';
+                return;
+            }
+            
+            let h = `<p style="text-align:center;padding:8px;color:#666;font-size:12px;">👆 Click on any order to see full details</p>`;
+            
             all.forEach(item=>{
                 if(item.itemType==="order"){
-                    let sc='status-pending';if(item.status==='Shipped')sc='status-shipped';else if(item.status==='Completed')sc='status-completed';else if(item.status==='Cancelled')sc='status-cancelled';
-                    // Build detailed items list
-                    let itemsDetail = '';
+                    let sc='status-pending';
+                    if(item.status==='Shipped') sc='status-shipped';
+                    else if(item.status==='Completed') sc='status-completed';
+                    else if(item.status==='Cancelled') sc='status-cancelled';
+                    
+                    // Build items HTML for detailed view
+                    let itemsHtml = '';
                     if(item.items && Array.isArray(item.items)) {
-                        itemsDetail = item.items.map(i => 
-                            `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #eee;font-size:12px;">
-                                <img src="${i.image||'https://via.placeholder.com/30'}" style="width:30px;height:30px;object-fit:contain;border-radius:4px;">
-                                <span>${i.name} x ${i.quantity} = ₹${i.price*i.quantity}</span>
-                            </div>`
-                        ).join('');
+                        itemsHtml = item.items.map(i => `
+                            <div class="order-detail-item">
+                                <img src="${i.image||'https://via.placeholder.com/40'}" onerror="this.src='https://via.placeholder.com/40'">
+                                <div class="info">
+                                    <div class="name">${i.name}</div>
+                                    <div class="price">₹${i.price} x ${i.quantity}</div>
+                                </div>
+                                <div class="total">₹${i.price*i.quantity}</div>
+                            </div>
+                        `).join('');
                     } else {
-                        itemsDetail = `<div style="font-size:12px;color:#666;">${item.items || 'N/A'}</div>`;
+                        itemsHtml = `<div style="font-size:12px;color:#666;">${item.items || 'N/A'}</div>`;
                     }
                     
-                    h+=`<div class="order-history-card">
-                        <div class="order-header">
-                            <div><span class="order-id">🛒 ${item.orderId}</span><span class="otp-badge">OTP: ${item.deliveryOTP||'N/A'}</span></div>
-                            <span class="order-status ${sc}">${item.status||'Pending'}</span>
+                    h += `
+                        <div class="order-history-card" onclick="toggleOrderDetail('${item.docId}')">
+                            <div class="order-header">
+                                <div>
+                                    <span class="order-id">🛒 ${item.orderId}</span>
+                                    <span class="otp-badge">🔑 ${item.deliveryOTP||'N/A'}</span>
+                                </div>
+                                <span class="order-status ${sc}">${item.status||'Pending'}</span>
+                            </div>
+                            <div style="font-size:12px;"><strong>👤 ${item.customerName}</strong> | 📞 ${item.customerPhone||'N/A'}</div>
+                            <div style="font-size:12px;color:#666;">${new Date(item.date).toLocaleString()}</div>
+                            
+                            <div id="detail_${item.docId}" class="order-detail-content">
+                                <div style="font-size:12px;margin-bottom:4px;">📍 ${item.customerAddress||'N/A'}</div>
+                                <div style="font-size:12px;">💰 Total: <strong>₹${item.total}</strong> | 💳 ${item.paymentMethod}</div>
+                                ${item.estimatedTime ? `<div style="font-size:12px;color:#1a237e;font-weight:bold;">⏱️ Estimated: ${item.estimatedTime}</div>` : ''}
+                                <div class="order-detail-items">
+                                    <div style="font-weight:bold;margin-bottom:4px;">📦 Items:</div>
+                                    ${itemsHtml}
+                                </div>
+                                <!-- CANCEL BUTTON ALWAYS AVAILABLE -->
+                                <button class="cancel-btn" onclick="event.stopPropagation();openCancelModal('${item.docId}','order')">
+                                    <i class="fas fa-times"></i> Cancel Order
+                                </button>
+                            </div>
                         </div>
-                        <div><strong>👤 ${item.customerName}</strong> | 📞 ${item.customerPhone||'N/A'}</div>
-                        <div>📍 ${item.customerAddress||'N/A'}</div>
-                        <div style="font-size:12px;">${new Date(item.date).toLocaleString()}</div>
-                        <div class="order-items-detail">${itemsDetail}</div>
-                        <div>Total: ₹${item.total} | 💳 ${item.paymentMethod}</div>
-                        ${(item.status==='Pending'||item.status==='Shipped')&&item.status!=='Cancelled'?`<button class="cancel-btn" onclick="openCancelModal('${item.docId}','order')">Cancel</button>`:''}
-                    </div>`;
+                    `;
                 }else{
                     let sc=item.status==='Cancelled'?'status-cancelled':'status-pending';
-                    h+=`<div class="order-history-card">
-                        <div class="order-header">
-                            <div><span class="order-id">🔧 ${item.repairId}</span><span class="otp-badge">OTP: ${item.deliveryOTP||'N/A'}</span></div>
-                            <span class="order-status ${sc}">${item.status||'Pending'}</span>
+                    h += `
+                        <div class="order-history-card" onclick="toggleOrderDetail('${item.docId}')">
+                            <div class="order-header">
+                                <div>
+                                    <span class="order-id">🔧 ${item.repairId}</span>
+                                    <span class="otp-badge">🔑 ${item.deliveryOTP||'N/A'}</span>
+                                </div>
+                                <span class="order-status ${sc}">${item.status||'Pending'}</span>
+                            </div>
+                            <div style="font-size:12px;"><strong>👤 ${item.customerName}</strong> | 📞 ${item.customerPhone||'N/A'}</div>
+                            <div style="font-size:12px;color:#666;">${new Date(item.date).toLocaleString()}</div>
+                            
+                            <div id="detail_${item.docId}" class="order-detail-content">
+                                <div style="font-size:12px;margin-bottom:4px;">📍 ${item.customerAddress||'N/A'}</div>
+                                <div style="font-size:12px;">📱 Device: <strong>${item.deviceType}</strong> - ${item.deviceBrand} ${item.deviceModel}</div>
+                                <div style="font-size:12px;">⚠️ Issue: ${item.deviceFaults}</div>
+                                ${item.estimatedTime ? `<div style="font-size:12px;color:#1a237e;font-weight:bold;">⏱️ Estimated: ${item.estimatedTime}</div>` : ''}
+                                <!-- CANCEL BUTTON ALWAYS AVAILABLE -->
+                                <button class="cancel-btn" onclick="event.stopPropagation();openCancelModal('${item.docId}','repair')">
+                                    <i class="fas fa-times"></i> Cancel Repair
+                                </button>
+                            </div>
                         </div>
-                        <div><strong>👤 ${item.customerName}</strong> | 📞 ${item.customerPhone||'N/A'}</div>
-                        <div>📍 ${item.customerAddress||'N/A'}</div>
-                        <div>Device: ${item.deviceType} - ${item.deviceBrand} ${item.deviceModel}</div>
-                        <div>Issue: ${item.deviceFaults}</div>
-                        <div style="font-size:12px;">${new Date(item.date).toLocaleString()}</div>
-                        ${item.status==='Pending'?`<button class="cancel-btn" onclick="openCancelModal('${item.docId}','repair')">Cancel</button>`:''}
-                    </div>`;
+                    `;
                 }
             });
-            document.getElementById('orderHistoryList').innerHTML=h;
-            document.getElementById('historyModal').style.display='flex';
+            
+            document.getElementById('orderHistoryList').innerHTML = h;
+            document.getElementById('historyModal').style.display = 'flex';
         }catch(e){showToast("Error: "+e.message);}
         finally{showGlobalLoading(false);}
+    }
+
+    function toggleOrderDetail(id) {
+        const div = document.getElementById(`detail_${id}`);
+        if(div) div.classList.toggle('open');
     }
 
     // ==================== REPAIR FORM ====================
@@ -1011,9 +1120,44 @@
         showGlobalLoading(true);
         try{
             const rid="REP"+Date.now()+Math.floor(Math.random()*1000),otp=generateOTP();
-            await db.collection("repairs").add({repairId:rid,date:new Date().toISOString(),type:"repair",customerEmail:currentUser.email,customerName:name,customerPhone:phone,customerAddress:address,deviceType:dt,deviceBrand:dbv,deviceModel:dm,deviceFaults:df,status:"Pending",deliveryOTP:otp,website:"Trust Fix"});
-            await emailjs.send("service_gbou2dl","template_lp2zf4b",{to_email:ADMIN_EMAIL,customer_name:name,customer_phone:phone,customer_address:address,device_type:dt,device_brand:dbv,device_model:dm,device_faults:df,order_date:new Date().toLocaleString(),order_type:"Repair Booking",action_type:"NEW REPAIR",delivery_otp:otp});
-            document.getElementById('popupRepairId').textContent=rid;document.getElementById('popupOtp').textContent=otp;document.getElementById('popupName').textContent=name;document.getElementById('popupPhone').textContent=phone;document.getElementById('popupAddress').textContent=address;document.getElementById('popupDevice').textContent=dt;document.getElementById('popupBrand').textContent=dbv+' '+dm;document.getElementById('popupIssue').textContent=df;
+            await db.collection("repairs").add({
+                repairId:rid,
+                date:new Date().toISOString(),
+                type:"repair",
+                customerEmail:currentUser.email,
+                customerName:name,
+                customerPhone:phone,
+                customerAddress:address,
+                deviceType:dt,
+                deviceBrand:dbv,
+                deviceModel:dm,
+                deviceFaults:df,
+                status:"Pending",
+                deliveryOTP:otp,
+                website:"Trust Fix"
+            });
+            await emailjs.send("service_gbou2dl","template_lp2zf4b",{
+                to_email: ADMIN_EMAIL,
+                customer_name: name,
+                customer_phone: phone,
+                customer_address: address,
+                device_type: dt,
+                device_brand: dbv,
+                device_model: dm,
+                device_faults: df,
+                order_date: new Date().toLocaleString(),
+                order_type: "Repair Booking",
+                action_type: "NEW REPAIR",
+                delivery_otp: otp
+            });
+            document.getElementById('popupRepairId').textContent=rid;
+            document.getElementById('popupOtp').textContent=otp;
+            document.getElementById('popupName').textContent=name;
+            document.getElementById('popupPhone').textContent=phone;
+            document.getElementById('popupAddress').textContent=address;
+            document.getElementById('popupDevice').textContent=dt;
+            document.getElementById('popupBrand').textContent=dbv+' '+dm;
+            document.getElementById('popupIssue').textContent=df;
             document.getElementById('confirmationPopup').classList.add('active');
             document.getElementById('repairForm').reset();
         }catch(e){showToast("❌ Error: "+e.message);}
