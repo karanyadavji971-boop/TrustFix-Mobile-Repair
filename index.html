@@ -31,6 +31,7 @@
         .user-name{background:#283593;color:white;padding:4px 10px;border-radius:25px;font-size:11px;}
         .logout-btn{background:#ff6b35;color:white;border:none;padding:4px 10px;border-radius:20px;cursor:pointer;font-size:11px;}
         .order-history-btn{background:#ff9800;color:white;border:none;padding:4px 10px;border-radius:20px;cursor:pointer;font-size:11px;}
+        .admin-panel-btn{background:#e74c3c;color:white;border:none;padding:4px 10px;border-radius:20px;cursor:pointer;font-size:11px;margin-left:4px;}
 
         /* Floating Buttons Container */
         .floating-buttons-wrapper{position:fixed;right:20px;z-index:150;display:flex;flex-direction:column;align-items:center;gap:12px;}
@@ -115,9 +116,6 @@
         .cat-headphones{border-top-color:#2ecc71 !important;}.cat-headphones .category-badge{background:#2ecc71;}
         .cat-powerbank{border-top-color:#e74c3c !important;}.cat-powerbank .category-badge{background:#e74c3c;}
         .cat-cable{border-top-color:#3498db !important;}.cat-cable .category-badge{background:#3498db;}
-
-        .ripple{position:absolute;border-radius:50%;background:rgba(26,35,126,0.3);transform:scale(0);animation:ripple-anim 0.6s linear;pointer-events:none;}
-        @keyframes ripple-anim{to{transform:scale(4);opacity:0;}}
 
         .detail-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;justify-content:center;align-items:center;z-index:1000;overflow-y:auto;}
         .detail-modal-content{background:white;border-radius:20px;width:92%;max-width:500px;padding:20px;max-height:85vh;overflow-y:auto;position:relative;}
@@ -216,6 +214,31 @@
         .login-required-msg p{color:#666;font-size:14px;margin-bottom:15px;}
         .login-required-msg button{background:#ff9800;color:white;border:none;padding:10px 25px;border-radius:25px;font-size:14px;font-weight:bold;cursor:pointer;margin:5px;}
         .login-required-msg button.close-btn{background:#666;}
+
+        /* Admin Panel Styles */
+        .admin-panel-modal .admin-tabs{display:flex;gap:6px;margin-bottom:15px;flex-wrap:wrap;}
+        .admin-panel-modal .admin-tab{flex:1;min-width:80px;padding:8px 12px;background:#f0f4f0;border:none;border-radius:8px;cursor:pointer;font-weight:bold;font-size:12px;text-align:center;}
+        .admin-panel-modal .admin-tab.active{background:#1a237e;color:white;}
+        .admin-panel-modal .admin-list{max-height:55vh;overflow-y:auto;}
+        .admin-card{background:#f8f9fa;border-radius:10px;padding:12px;margin-bottom:10px;border-left:4px solid #1a237e;}
+        .admin-card .admin-header{display:flex;justify-content:space-between;flex-wrap:wrap;margin-bottom:6px;}
+        .admin-card .admin-id{font-weight:bold;font-size:13px;}
+        .admin-card .admin-status{padding:2px 10px;border-radius:12px;font-size:10px;font-weight:bold;}
+        .admin-card .admin-detail{font-size:12px;color:#555;}
+        .admin-card .admin-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+        .admin-card .admin-actions button{padding:4px 12px;border:none;border-radius:15px;font-size:11px;font-weight:bold;cursor:pointer;}
+        .admin-btn-confirm{background:#4caf50;color:white;}
+        .admin-btn-cancel{background:#e74c3c;color:white;}
+        .admin-btn-time{background:#ff9800;color:white;}
+        .admin-time-input{display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap;}
+        .admin-time-input input{padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:11px;width:120px;}
+        .admin-time-input button{padding:4px 10px;background:#1a237e;color:white;border:none;border-radius:6px;font-size:11px;cursor:pointer;}
+        .admin-card .order-items-detail{background:white;padding:8px;border-radius:6px;margin:6px 0;font-size:12px;border:1px solid #eee;}
+        .admin-card .order-items-detail .item-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #f0f0f0;}
+        .admin-card .order-items-detail .item-row:last-child{border-bottom:none;}
+        .admin-card .order-items-detail .item-img{width:30px;height:30px;object-fit:contain;border-radius:4px;}
+        .admin-card .order-items-detail .item-info{flex:1;}
+        .admin-card .admin-time-info{font-size:11px;color:#1a237e;font-weight:bold;margin-top:4px;background:#e8eaf6;padding:4px 10px;border-radius:10px;display:inline-block;}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -470,6 +493,19 @@
     </div>
 </div>
 
+<!-- ===== ADMIN PANEL MODAL ===== -->
+<div id="adminPanelModal" class="modal admin-panel-modal">
+    <div class="modal-content">
+        <span class="close-modal-btn" onclick="closeAdminPanel()">&times;</span>
+        <h3><i class="fas fa-shield-alt"></i> Admin Panel</h3>
+        <div class="admin-tabs">
+            <button class="admin-tab active" onclick="switchAdminTab('orders',this)">🛒 Orders</button>
+            <button class="admin-tab" onclick="switchAdminTab('repairs',this)">🔧 Repairs</button>
+        </div>
+        <div id="adminList" class="admin-list"></div>
+    </div>
+</div>
+
 <!-- ===== TOAST ===== -->
 <div id="toast" class="toast"></div>
 
@@ -496,6 +532,7 @@
     let selectedCancelReason = "";
     let selectedCancelItemType = null;
     const ADMIN_EMAIL = "abhishekbainsla363@gmail.com";
+    let adminTab = "orders";
 
     // ==================== CHAT FUNCTIONS ====================
     let lastAutoReplyTime = 0;
@@ -504,7 +541,6 @@
 
     function openChatOrLogin() {
         if (!currentUser) {
-            // Show login required message
             document.getElementById('loginRequiredMsg').classList.add('show');
             return;
         }
@@ -792,10 +828,62 @@
         if(selectedPayment!=='cod'&&!utr){showToast("Enter UTR");return;}
         showGlobalLoading(true);
         try{
-            const oid="ORD"+Date.now()+Math.floor(Math.random()*1000),items=cart.map(i=>`- ${i.name}: ₹${i.price} x ${i.quantity}`).join('\n'),total=getTotal(),pm={cod:"Cash on Delivery",phonepe:"PhonePe",gpay:"Google Pay",paytm:"Paytm"},otp=generateOTP();
-            await db.collection("orders").add({orderId:oid,date:new Date().toISOString(),type:"product_order",customerEmail:currentUser.email,customerName:n,customerPhone:p,customerAddress:a,items,total,paymentMethod:pm[selectedPayment],utr:utr||"COD",status:"Pending",deliveryOTP:otp,website:"Trust Fix"});
-            await emailjs.send("service_gbou2dl","template_lp2zf4b",{to_email:ADMIN_EMAIL,customer_name:n,customer_phone:p,customer_address:a,order_items:items,order_total:`₹${total}`,payment_method:pm[selectedPayment],utr_number:utr||"COD",order_date:new Date().toLocaleString(),order_type:"Product Order",action_type:"NEW ORDER",delivery_otp:otp});
-            showToast("✅ Order placed! OTP: "+otp);cart=[];saveCart();closeModal();updateCartCount();
+            const oid="ORD"+Date.now()+Math.floor(Math.random()*1000);
+            // Detailed items array with all info
+            const items = cart.map(i => ({
+                id: i.id,
+                name: i.name,
+                price: i.price,
+                quantity: i.quantity,
+                image: i.images[0],
+                category: i.category
+            }));
+            const total = getTotal();
+            const pm = {cod:"Cash on Delivery",phonepe:"PhonePe",gpay:"Google Pay",paytm:"Paytm"};
+            const otp = generateOTP();
+            
+            await db.collection("orders").add({
+                orderId: oid,
+                date: new Date().toISOString(),
+                type: "product_order",
+                customerEmail: currentUser.email,
+                customerName: n,
+                customerPhone: p,
+                customerAddress: a,
+                items: items, // Full details array
+                total: total,
+                paymentMethod: pm[selectedPayment],
+                utr: utr||"COD",
+                status: "Pending",
+                deliveryOTP: otp,
+                website: "Trust Fix"
+            });
+            
+            // Email notification
+            const itemsString = items.map(i => 
+                `- ${i.name} (₹${i.price}) x ${i.quantity} = ₹${i.price*i.quantity}`
+            ).join('\n');
+            
+            await emailjs.send("service_gbou2dl","template_lp2zf4b",{
+                to_email: ADMIN_EMAIL,
+                customer_name: n,
+                customer_phone: p,
+                customer_address: a,
+                order_items: itemsString,
+                order_total: `₹${total}`,
+                payment_method: pm[selectedPayment],
+                utr_number: utr||"COD",
+                order_date: new Date().toLocaleString(),
+                order_type: "Product Order",
+                action_type: "NEW ORDER",
+                delivery_otp: otp
+            });
+            
+            showToast("✅ Order placed! OTP: "+otp);
+            cart = [];
+            saveCart();
+            closeModal();
+            updateCartCount();
         }catch(e){showToast("Error: "+e.message);}
         finally{showGlobalLoading(false);}
     }
@@ -805,7 +893,15 @@
     function updateUI(){
         if(currentUser){
             let n=currentUser.displayName||currentUser.email.split('@')[0];
-            document.getElementById('authSection').innerHTML=`<div class="user-info"><span class="user-name"><i class="fas fa-user-circle"></i> ${n}</span><button class="order-history-btn" onclick="showOrderHistory()"><i class="fas fa-history"></i> Orders</button><button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button></div>`;
+            let isAdmin = (currentUser.email === ADMIN_EMAIL);
+            let adminBtn = isAdmin ? `<button class="admin-panel-btn" onclick="openAdminPanel()"><i class="fas fa-cog"></i> Admin</button>` : '';
+            document.getElementById('authSection').innerHTML=`
+                <div class="user-info">
+                    <span class="user-name"><i class="fas fa-user-circle"></i> ${n}</span>
+                    <button class="order-history-btn" onclick="showOrderHistory()"><i class="fas fa-history"></i> Orders</button>
+                    ${adminBtn}
+                    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>`;
         }else{
             document.getElementById('authSection').innerHTML=`<button class="login-btn" onclick="showLoginModal()"><i class="fas fa-user"></i> Login</button>`;
             document.getElementById('chatMessages').innerHTML='';
@@ -837,7 +933,7 @@
                 await emailjs.send("service_gbou2dl","template_lp2zf4b",{to_email:ADMIN_EMAIL,customer_name:dd.customerName||"N/A",customer_phone:dd.customerPhone||"N/A",device_type:dd.deviceType||"N/A",device_brand:dd.deviceBrand||"N/A",device_model:dd.deviceModel||"N/A",device_faults:dd.deviceFaults||"N/A",order_date:new Date().toLocaleString(),order_type:"Repair Cancelled",action_type:"CANCELLED",cancel_reason:fr,cancelled_by:"Customer"});
                 showToast("✅ Repair cancelled!");
             }
-            closeCancelReasonModal();showOrderHistory();
+            closeCancelReasonModal();showOrderHistory();if(currentUser?.email === ADMIN_EMAIL) openAdminPanel();
         }catch(e){showToast("Error: "+e.message);}
         finally{showGlobalLoading(false);}
     }
@@ -858,10 +954,45 @@
             all.forEach(item=>{
                 if(item.itemType==="order"){
                     let sc='status-pending';if(item.status==='Shipped')sc='status-shipped';else if(item.status==='Completed')sc='status-completed';else if(item.status==='Cancelled')sc='status-cancelled';
-                    h+=`<div class="order-history-card"><div class="order-header"><div><span class="order-id">🛒 ${item.orderId}</span><span class="otp-badge">OTP: ${item.deliveryOTP||'N/A'}</span></div><span class="order-status ${sc}">${item.status||'Pending'}</span></div><div><strong>👤 ${item.customerName}</strong> | 📞 ${item.customerPhone||'N/A'}</div><div>📍 ${item.customerAddress||'N/A'}</div><div style="font-size:12px;">${new Date(item.date).toLocaleString()}</div><div>Total: ₹${item.total} | 💳 ${item.paymentMethod}</div>${(item.status==='Pending'||item.status==='Shipped')&&item.status!=='Cancelled'?`<button class="cancel-btn" onclick="openCancelModal('${item.docId}','order')">Cancel</button>`:''}</div>`;
+                    // Build detailed items list
+                    let itemsDetail = '';
+                    if(item.items && Array.isArray(item.items)) {
+                        itemsDetail = item.items.map(i => 
+                            `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #eee;font-size:12px;">
+                                <img src="${i.image||'https://via.placeholder.com/30'}" style="width:30px;height:30px;object-fit:contain;border-radius:4px;">
+                                <span>${i.name} x ${i.quantity} = ₹${i.price*i.quantity}</span>
+                            </div>`
+                        ).join('');
+                    } else {
+                        itemsDetail = `<div style="font-size:12px;color:#666;">${item.items || 'N/A'}</div>`;
+                    }
+                    
+                    h+=`<div class="order-history-card">
+                        <div class="order-header">
+                            <div><span class="order-id">🛒 ${item.orderId}</span><span class="otp-badge">OTP: ${item.deliveryOTP||'N/A'}</span></div>
+                            <span class="order-status ${sc}">${item.status||'Pending'}</span>
+                        </div>
+                        <div><strong>👤 ${item.customerName}</strong> | 📞 ${item.customerPhone||'N/A'}</div>
+                        <div>📍 ${item.customerAddress||'N/A'}</div>
+                        <div style="font-size:12px;">${new Date(item.date).toLocaleString()}</div>
+                        <div class="order-items-detail">${itemsDetail}</div>
+                        <div>Total: ₹${item.total} | 💳 ${item.paymentMethod}</div>
+                        ${(item.status==='Pending'||item.status==='Shipped')&&item.status!=='Cancelled'?`<button class="cancel-btn" onclick="openCancelModal('${item.docId}','order')">Cancel</button>`:''}
+                    </div>`;
                 }else{
                     let sc=item.status==='Cancelled'?'status-cancelled':'status-pending';
-                    h+=`<div class="order-history-card"><div class="order-header"><div><span class="order-id">🔧 ${item.repairId}</span><span class="otp-badge">OTP: ${item.deliveryOTP||'N/A'}</span></div><span class="order-status ${sc}">${item.status||'Pending'}</span></div><div><strong>👤 ${item.customerName}</strong> | 📞 ${item.customerPhone||'N/A'}</div><div>📍 ${item.customerAddress||'N/A'}</div><div>Device: ${item.deviceType} - ${item.deviceBrand} ${item.deviceModel}</div><div>Issue: ${item.deviceFaults}</div><div style="font-size:12px;">${new Date(item.date).toLocaleString()}</div>${item.status==='Pending'?`<button class="cancel-btn" onclick="openCancelModal('${item.docId}','repair')">Cancel</button>`:''}</div>`;
+                    h+=`<div class="order-history-card">
+                        <div class="order-header">
+                            <div><span class="order-id">🔧 ${item.repairId}</span><span class="otp-badge">OTP: ${item.deliveryOTP||'N/A'}</span></div>
+                            <span class="order-status ${sc}">${item.status||'Pending'}</span>
+                        </div>
+                        <div><strong>👤 ${item.customerName}</strong> | 📞 ${item.customerPhone||'N/A'}</div>
+                        <div>📍 ${item.customerAddress||'N/A'}</div>
+                        <div>Device: ${item.deviceType} - ${item.deviceBrand} ${item.deviceModel}</div>
+                        <div>Issue: ${item.deviceFaults}</div>
+                        <div style="font-size:12px;">${new Date(item.date).toLocaleString()}</div>
+                        ${item.status==='Pending'?`<button class="cancel-btn" onclick="openCancelModal('${item.docId}','repair')">Cancel</button>`:''}
+                    </div>`;
                 }
             });
             document.getElementById('orderHistoryList').innerHTML=h;
@@ -895,6 +1026,297 @@
     function showCallPopup(){document.getElementById('callPopup').classList.add('active');}
     function closeCallPopup(){document.getElementById('callPopup').classList.remove('active');}
     document.getElementById('callPopup').addEventListener('click',function(e){if(e.target===this)closeCallPopup();});
+
+    // ==================== ADMIN PANEL ====================
+    function openAdminPanel() {
+        if(!currentUser || currentUser.email !== ADMIN_EMAIL) {
+            showToast("Access Denied: Admin only");
+            return;
+        }
+        document.getElementById('adminPanelModal').style.display = 'flex';
+        loadAdminData();
+    }
+
+    function closeAdminPanel() {
+        document.getElementById('adminPanelModal').style.display = 'none';
+    }
+
+    function switchAdminTab(tab, btn) {
+        adminTab = tab;
+        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        loadAdminData();
+    }
+
+    async function loadAdminData() {
+        if(!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+        showGlobalLoading(true);
+        try {
+            const listDiv = document.getElementById('adminList');
+            let html = '';
+            
+            if(adminTab === 'orders') {
+                const snapshot = await db.collection("orders")
+                    .where("status", "in", ["Pending", "Shipped"])
+                    .orderBy("date", "desc")
+                    .get();
+                
+                if(snapshot.empty) {
+                    html = `<p style="text-align:center;padding:20px;color:#666;">No pending orders</p>`;
+                } else {
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const id = doc.id;
+                        let itemsHtml = '';
+                        if(data.items && Array.isArray(data.items)) {
+                            itemsHtml = data.items.map(i => 
+                                `<div class="item-row">
+                                    <img class="item-img" src="${i.image||'https://via.placeholder.com/30'}" onerror="this.src='https://via.placeholder.com/30'">
+                                    <div class="item-info">${i.name}</div>
+                                    <div>₹${i.price} x ${i.quantity}</div>
+                                    <div style="font-weight:bold;">₹${i.price*i.quantity}</div>
+                                </div>`
+                            ).join('');
+                        } else {
+                            itemsHtml = `<div>${data.items || 'N/A'}</div>`;
+                        }
+                        
+                        html += `
+                            <div class="admin-card">
+                                <div class="admin-header">
+                                    <span class="admin-id">🛒 ${data.orderId}</span>
+                                    <span class="admin-status status-pending">${data.status}</span>
+                                </div>
+                                <div class="admin-detail"><strong>👤 ${data.customerName}</strong> | 📞 ${data.customerPhone}</div>
+                                <div class="admin-detail">📍 ${data.customerAddress}</div>
+                                <div class="admin-detail">💰 ₹${data.total} | 💳 ${data.paymentMethod} | 🔑 OTP: ${data.deliveryOTP||'N/A'}</div>
+                                <div class="order-items-detail">
+                                    <div style="font-weight:bold;margin-bottom:4px;">📦 Items:</div>
+                                    ${itemsHtml}
+                                </div>
+                                ${data.estimatedTime ? `<div class="admin-time-info">⏱️ Estimated: ${data.estimatedTime}</div>` : ''}
+                                <div class="admin-actions">
+                                    <button class="admin-btn-confirm" onclick="adminConfirmOrder('${id}')">✅ Confirm</button>
+                                    <button class="admin-btn-cancel" onclick="adminCancelOrder('${id}')">❌ Cancel</button>
+                                    <button class="admin-btn-time" onclick="adminSetTime('${id}')">⏱️ Set Time</button>
+                                </div>
+                                <div id="timeInput_${id}" class="admin-time-input" style="display:none;">
+                                    <input type="text" id="timeValue_${id}" placeholder="e.g., 2 days, 5 PM">
+                                    <button onclick="adminSaveTime('${id}')">Save</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            } else { // Repairs
+                const snapshot = await db.collection("repairs")
+                    .where("status", "==", "Pending")
+                    .orderBy("date", "desc")
+                    .get();
+                
+                if(snapshot.empty) {
+                    html = `<p style="text-align:center;padding:20px;color:#666;">No pending repairs</p>`;
+                } else {
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const id = doc.id;
+                        html += `
+                            <div class="admin-card">
+                                <div class="admin-header">
+                                    <span class="admin-id">🔧 ${data.repairId}</span>
+                                    <span class="admin-status status-pending">${data.status}</span>
+                                </div>
+                                <div class="admin-detail"><strong>👤 ${data.customerName}</strong> | 📞 ${data.customerPhone}</div>
+                                <div class="admin-detail">📍 ${data.customerAddress}</div>
+                                <div class="admin-detail">📱 ${data.deviceType} - ${data.deviceBrand} ${data.deviceModel}</div>
+                                <div class="admin-detail">⚠️ Issue: ${data.deviceFaults}</div>
+                                <div class="admin-detail">🔑 OTP: ${data.deliveryOTP||'N/A'}</div>
+                                ${data.estimatedTime ? `<div class="admin-time-info">⏱️ Estimated: ${data.estimatedTime}</div>` : ''}
+                                <div class="admin-actions">
+                                    <button class="admin-btn-confirm" onclick="adminConfirmRepair('${id}')">✅ Confirm</button>
+                                    <button class="admin-btn-cancel" onclick="adminCancelRepair('${id}')">❌ Cancel</button>
+                                    <button class="admin-btn-time" onclick="adminSetRepairTime('${id}')">⏱️ Set Time</button>
+                                </div>
+                                <div id="repairTimeInput_${id}" class="admin-time-input" style="display:none;">
+                                    <input type="text" id="repairTimeValue_${id}" placeholder="e.g., 2 days, 5 PM">
+                                    <button onclick="adminSaveRepairTime('${id}')">Save</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            }
+            listDiv.innerHTML = html;
+        } catch(e) {
+            showToast("Error loading admin data: "+e.message);
+        } finally {
+            showGlobalLoading(false);
+        }
+    }
+
+    // Admin Actions for Orders
+    async function adminConfirmOrder(id) {
+        if(!confirm("Confirm this order?")) return;
+        showGlobalLoading(true);
+        try {
+            const doc = await db.collection("orders").doc(id).get();
+            const data = doc.data();
+            await db.collection("orders").doc(id).update({status: "Shipped"});
+            await emailjs.send("service_gbou2dl","template_lp2zf4b",{
+                to_email: data.customerEmail || ADMIN_EMAIL,
+                customer_name: data.customerName,
+                customer_phone: data.customerPhone,
+                order_items: data.items ? data.items.map(i=>i.name).join(', ') : 'N/A',
+                order_total: `₹${data.total}`,
+                payment_method: data.paymentMethod,
+                order_date: new Date().toLocaleString(),
+                order_type: "Order Confirmed",
+                action_type: "CONFIRMED",
+                delivery_otp: data.deliveryOTP || 'N/A'
+            });
+            showToast("✅ Order confirmed!");
+            loadAdminData();
+        } catch(e) {
+            showToast("Error: "+e.message);
+        } finally {
+            showGlobalLoading(false);
+        }
+    }
+
+    async function adminCancelOrder(id) {
+        if(!confirm("Cancel this order?")) return;
+        showGlobalLoading(true);
+        try {
+            const doc = await db.collection("orders").doc(id).get();
+            const data = doc.data();
+            await db.collection("orders").doc(id).update({
+                status: "Cancelled",
+                cancelReason: "Cancelled by Admin",
+                cancelledAt: new Date().toISOString(),
+                cancelledBy: "Admin"
+            });
+            await emailjs.send("service_gbou2dl","template_lp2zf4b",{
+                to_email: data.customerEmail || ADMIN_EMAIL,
+                customer_name: data.customerName,
+                customer_phone: data.customerPhone,
+                order_items: data.items ? data.items.map(i=>i.name).join(', ') : 'N/A',
+                order_total: `₹${data.total}`,
+                payment_method: data.paymentMethod,
+                order_date: new Date().toLocaleString(),
+                order_type: "Order Cancelled by Admin",
+                action_type: "ADMIN CANCELLED",
+                cancel_reason: "By Admin"
+            });
+            showToast("✅ Order cancelled by admin");
+            loadAdminData();
+        } catch(e) {
+            showToast("Error: "+e.message);
+        } finally {
+            showGlobalLoading(false);
+        }
+    }
+
+    function adminSetTime(id) {
+        document.getElementById(`timeInput_${id}`).style.display = 'flex';
+    }
+
+    async function adminSaveTime(id) {
+        const time = document.getElementById(`timeValue_${id}`).value.trim();
+        if(!time) { showToast("Please enter time"); return; }
+        showGlobalLoading(true);
+        try {
+            await db.collection("orders").doc(id).update({estimatedTime: time});
+            showToast("✅ Time updated!");
+            loadAdminData();
+        } catch(e) {
+            showToast("Error: "+e.message);
+        } finally {
+            showGlobalLoading(false);
+        }
+    }
+
+    // Admin Actions for Repairs
+    async function adminConfirmRepair(id) {
+        if(!confirm("Confirm this repair?")) return;
+        showGlobalLoading(true);
+        try {
+            const doc = await db.collection("repairs").doc(id).get();
+            const data = doc.data();
+            await db.collection("repairs").doc(id).update({status: "Confirmed"});
+            await emailjs.send("service_gbou2dl","template_lp2zf4b",{
+                to_email: data.customerEmail || ADMIN_EMAIL,
+                customer_name: data.customerName,
+                customer_phone: data.customerPhone,
+                device_type: data.deviceType,
+                device_brand: data.deviceBrand,
+                device_model: data.deviceModel,
+                device_faults: data.deviceFaults,
+                order_date: new Date().toLocaleString(),
+                order_type: "Repair Confirmed",
+                action_type: "CONFIRMED",
+                delivery_otp: data.deliveryOTP || 'N/A'
+            });
+            showToast("✅ Repair confirmed!");
+            loadAdminData();
+        } catch(e) {
+            showToast("Error: "+e.message);
+        } finally {
+            showGlobalLoading(false);
+        }
+    }
+
+    async function adminCancelRepair(id) {
+        if(!confirm("Cancel this repair?")) return;
+        showGlobalLoading(true);
+        try {
+            const doc = await db.collection("repairs").doc(id).get();
+            const data = doc.data();
+            await db.collection("repairs").doc(id).update({
+                status: "Cancelled",
+                cancelReason: "Cancelled by Admin",
+                cancelledAt: new Date().toISOString(),
+                cancelledBy: "Admin"
+            });
+            await emailjs.send("service_gbou2dl","template_lp2zf4b",{
+                to_email: data.customerEmail || ADMIN_EMAIL,
+                customer_name: data.customerName,
+                customer_phone: data.customerPhone,
+                device_type: data.deviceType,
+                device_brand: data.deviceBrand,
+                device_model: data.deviceModel,
+                device_faults: data.deviceFaults,
+                order_date: new Date().toLocaleString(),
+                order_type: "Repair Cancelled by Admin",
+                action_type: "ADMIN CANCELLED",
+                cancel_reason: "By Admin"
+            });
+            showToast("✅ Repair cancelled by admin");
+            loadAdminData();
+        } catch(e) {
+            showToast("Error: "+e.message);
+        } finally {
+            showGlobalLoading(false);
+        }
+    }
+
+    function adminSetRepairTime(id) {
+        document.getElementById(`repairTimeInput_${id}`).style.display = 'flex';
+    }
+
+    async function adminSaveRepairTime(id) {
+        const time = document.getElementById(`repairTimeValue_${id}`).value.trim();
+        if(!time) { showToast("Please enter time"); return; }
+        showGlobalLoading(true);
+        try {
+            await db.collection("repairs").doc(id).update({estimatedTime: time});
+            showToast("✅ Time updated!");
+            loadAdminData();
+        } catch(e) {
+            showToast("Error: "+e.message);
+        } finally {
+            showGlobalLoading(false);
+        }
+    }
 
     // ==================== MODALS ====================
     function showLoginModal(){document.getElementById('loginModal').style.display='flex';}
