@@ -162,7 +162,6 @@
         .toast{position:fixed;bottom:20px;left:20px;right:20px;background:#1a1a2e;color:white;padding:12px;border-radius:10px;text-align:center;display:none;z-index:1100;font-size:14px;}
         footer{text-align:center;padding:15px;color:#666;font-size:11px;background:#f0f4f0;margin-top:30px;}
 
-        /* Order History - Expandable Card */
         .order-history-card{background:white;border-radius:12px;padding:15px;margin-bottom:12px;border-left:4px solid #1a237e;box-shadow:0 2px 8px rgba(0,0,0,0.06);cursor:pointer;transition:all 0.2s;}
         .order-history-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.1);}
         .order-history-card .order-header{display:flex;justify-content:space-between;flex-wrap:wrap;margin-bottom:6px;}
@@ -183,8 +182,10 @@
         .order-detail-item .info .price{font-size:12px;color:#1a237e;}
         .order-detail-item .total{font-weight:bold;font-size:13px;}
         
+        /* Cancel Buttons */
         .cancel-btn{background:#e74c3c;color:white;border:none;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:11px;margin-top:8px;}
         .cancel-btn:hover{background:#c0392b;}
+        .cancel-btn.small{font-size:10px;padding:3px 10px;margin-top:0;}
 
         .cancel-reason-modal .reason-options{display:flex;flex-direction:column;gap:8px;margin:12px 0;}
         .reason-option{display:flex;align-items:center;gap:8px;padding:10px;background:#f0f4f0;border-radius:8px;cursor:pointer;}
@@ -545,6 +546,7 @@
     let pendingCancelRepairId = null;
     let selectedCancelReason = "";
     let selectedCancelItemType = null;
+    let cancelItemIndex = null; // For partial cancel
     const ADMIN_EMAIL = "abhishekbainsla363@gmail.com";
     let adminTab = "orders";
     let chatOpen = false;
@@ -924,14 +926,16 @@
     async function loginWithGoogle(){showGlobalLoading(true);try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());closeLoginModal();showToast("Google login!");}catch(e){showToast(e.message);}finally{showGlobalLoading(false);}}
     function logout(){auth.signOut();cart=[];saveCart();updateCartCount();lastAutoReplyTime=0;showToast("Logged out");}
 
-    // ==================== CANCEL (ALWAYS AVAILABLE) ====================
+    // ==================== CANCEL (Full Order & Individual Item) ====================
     function selectReason(el,r){document.querySelectorAll('.reason-option').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');el.querySelector('input').checked=true;selectedCancelReason=r;document.getElementById('otherReasonDiv').style.display=r==='Other'?'block':'none';}
     
-    function openCancelModal(id,type){
-        pendingCancelOrderId=id;
-        pendingCancelRepairId=id;
-        selectedCancelItemType=type;
-        selectedCancelReason="";
+    // Open Cancel Modal for Full Order or Single Item
+    function openCancelModal(id, type, itemIdx = null){
+        pendingCancelOrderId = id;
+        pendingCancelRepairId = id;
+        selectedCancelItemType = type;
+        cancelItemIndex = itemIdx; // Store item index for partial cancel
+        selectedCancelReason = "";
         document.querySelectorAll('.reason-option').forEach(o=>{o.classList.remove('selected');o.querySelector('input').checked=false;});
         document.getElementById('otherReasonDiv').style.display='none';
         document.getElementById('cancelReasonModal').style.display='flex';
@@ -943,7 +947,59 @@
         if(selectedCancelReason==='Other'){const ot=document.getElementById('otherReasonText').value.trim();if(ot)fr="Other: "+ot;else{showToast("Specify reason");return;}}
         showGlobalLoading(true);
         try{
-            if(selectedCancelItemType==='order'){
+            // ===== PARTIAL CANCEL (Single Item from Order) =====
+            if(selectedCancelItemType === 'order_item' && cancelItemIndex !== null) {
+                const docRef = db.collection("orders").doc(pendingCancelOrderId);
+                const doc = await docRef.get();
+                const data = doc.data();
+                
+                if(!data.items || data.items.length === 0) {
+                    showToast("No items to cancel");
+                    return;
+                }
+
+                // Remove the specific item
+                let updatedItems = data.items.filter((_, idx) => idx !== cancelItemIndex);
+                
+                // Recalculate Total
+                let newTotal = 0;
+                updatedItems.forEach(i => { newTotal += (i.price * i.quantity); });
+
+                // If no items left, cancel the whole order
+                if(updatedItems.length === 0) {
+                    await docRef.update({
+                        status: "Cancelled",
+                        cancelReason: fr,
+                        cancelledAt: new Date().toISOString(),
+                        cancelledBy: "Customer"
+                    });
+                    showToast("✅ All items removed, Order Cancelled!");
+                } else {
+                    // Update order with remaining items and new total
+                    await docRef.update({
+                        items: updatedItems,
+                        total: newTotal,
+                        status: "Pending" // Keep status pending if items remain
+                    });
+                    showToast("✅ Item removed from order!");
+                }
+                
+                await emailjs.send("service_gbou2dl","template_lp2zf4b",{
+                    to_email: ADMIN_EMAIL,
+                    customer_name: data.customerName||"N/A",
+                    customer_phone: data.customerPhone||"N/A",
+                    order_items: "One item was removed from order.",
+                    order_total: `₹${newTotal}`,
+                    payment_method: data.paymentMethod||"N/A",
+                    order_date: new Date().toLocaleString(),
+                    order_type: "Order Item Cancelled",
+                    action_type: "ITEM CANCELLED",
+                    cancel_reason: fr,
+                    cancelled_by: "Customer"
+                });
+
+            // ===== FULL ORDER CANCEL =====
+            } else if(selectedCancelItemType === 'order') {
                 const d=await db.collection("orders").doc(pendingCancelOrderId).get();
                 const dd=d.data();
                 await db.collection("orders").doc(pendingCancelOrderId).update({
@@ -966,7 +1022,9 @@
                     cancelled_by: "Customer"
                 });
                 showToast("✅ Order cancelled!");
-            }else{
+
+            // ===== REPAIR CANCEL =====
+            } else {
                 const d=await db.collection("repairs").doc(pendingCancelRepairId).get();
                 const dd=d.data();
                 await db.collection("repairs").doc(pendingCancelRepairId).update({
@@ -991,6 +1049,7 @@
                 });
                 showToast("✅ Repair cancelled!");
             }
+            
             closeCancelReasonModal();
             showOrderHistory();
             if(currentUser?.email === ADMIN_EMAIL) openAdminPanel();
@@ -1029,7 +1088,7 @@
                     // Build items HTML for detailed view
                     let itemsHtml = '';
                     if(item.items && Array.isArray(item.items)) {
-                        itemsHtml = item.items.map(i => `
+                        itemsHtml = item.items.map((i, idx) => `
                             <div class="order-detail-item">
                                 <img src="${i.image||'https://via.placeholder.com/40'}" onerror="this.src='https://via.placeholder.com/40'">
                                 <div class="info">
@@ -1037,6 +1096,7 @@
                                     <div class="price">₹${i.price} x ${i.quantity}</div>
                                 </div>
                                 <div class="total">₹${i.price*i.quantity}</div>
+                                ${item.status !== 'Cancelled' ? `<button class="cancel-btn small" onclick="event.stopPropagation();openCancelModal('${item.docId}','order_item', ${idx})"><i class="fas fa-times"></i></button>` : ''}
                             </div>
                         `).join('');
                     } else {
@@ -1063,10 +1123,8 @@
                                     <div style="font-weight:bold;margin-bottom:4px;">📦 Items:</div>
                                     ${itemsHtml}
                                 </div>
-                                <!-- CANCEL BUTTON ALWAYS AVAILABLE -->
-                                <button class="cancel-btn" onclick="event.stopPropagation();openCancelModal('${item.docId}','order')">
-                                    <i class="fas fa-times"></i> Cancel Order
-                                </button>
+                                <!-- FULL ORDER CANCEL BUTTON -->
+                                ${item.status !== 'Cancelled' ? `<button class="cancel-btn" onclick="event.stopPropagation();openCancelModal('${item.docId}','order')"><i class="fas fa-times"></i> Cancel Full Order</button>` : ''}
                             </div>
                         </div>
                     `;
